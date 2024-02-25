@@ -1,344 +1,266 @@
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
-/**
- * Simple Paint Application using Java Swing.
- * Allows users to draw, save, load, and clear drawings.
- *
- * @author ChatGPT
- */
 public class chatgptTesting extends JFrame {
 
-    private BufferedImage canvas;
-    private Point lastPoint;
-    private JPanel rightPanel;
-    private ArrayList<String> selectedItems;
-    private ArrayList<JButton> objects;
-    private boolean placingDoor; // Flag to indicate door placement mode
-    private int doorX; // X-coordinate of the door placement
-    private int doorY; // Y-coordinate of the door placement
+    private ArrayList<myFurnitureObject> objects;
+    private myFurnitureObject currentObjectToPlace;
 
-    /**
-     * Constructor to initialize the application.
-     */
     public chatgptTesting() {
-        super("Simple Paint Application");
-        initUI();
-        initDrawing();
-        addAddItemButton();
+        super("Furniture Drawing App");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(800, 600);
+        setLayout(new BorderLayout());
 
-        rightPanel = new JPanel();
-        rightPanel.setLayout(new GridLayout(0, 1));
+        // Initialize the objects list
+        objects = new ArrayList<>();
+
+        // Right panel to contain buttons for each object
+        JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
         add(rightPanel, BorderLayout.EAST);
 
-        selectedItems = new ArrayList<>();
-        objects = new ArrayList<>();
-        placingDoor = false; // Initially not in door placement mode
-    }
+        // Create buttons with drawings and names for each object and add them to the right panel
+        addFurnitureObjectButton(rightPanel, new myDoor());
+        addFurnitureObjectButton(rightPanel, new myWall());
+        addFurnitureObjectButton(rightPanel, new myRug());
+        addFurnitureObjectButton(rightPanel, new myWindow());
+        addFurnitureObjectButton(rightPanel, new myMirror());
+        addFurnitureObjectButton(rightPanel, new myLamp());
 
-    /**
-     * Initializes the User Interface components of the application.
-     */
-    private void initUI() {
-        canvas = new BufferedImage(800, 600, BufferedImage.TYPE_INT_ARGB);
-        clearCanvas();
-
-        JPanel panel = new JPanel() {
+        // Canvas panel to draw objects
+        JPanel canvasPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                g.drawImage(canvas, 0, 0, null);
-                drawGrid(g);
+                // Draw objects
+                for (myFurnitureObject object : objects) {
+                    object.draw((Graphics2D) g);
+                }
             }
-
-            private void drawGrid(Graphics g) {
-                int cellWidth = 40;
-                int cellHeight = 40;
-
-                // Draw solid lines for full cells
-                g.setColor(Color.BLACK);
-                for (int x = 0; x < canvas.getWidth(); x += cellWidth) {
-                    g.drawLine(x, 0, x, canvas.getHeight());
-                }
-                for (int y = 0; y < canvas.getHeight(); y += cellHeight) {
-                    g.drawLine(0, y, canvas.getWidth(), y);
-                }
-
-                // Draw dashed lines for half cells
-                Stroke dashed = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{2}, 0);
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setStroke(dashed);
-                g2d.setColor(Color.GRAY);
-                int halfCellWidth = cellWidth / 2;
-                int halfCellHeight = cellHeight / 2;
-                for (int x = halfCellWidth; x < canvas.getWidth(); x += cellWidth) {
-                    g2d.drawLine(x, 0, x, canvas.getHeight());
-                }
-                for (int y = halfCellHeight; y < canvas.getHeight(); y += cellHeight) {
-                    g2d.drawLine(0, y, canvas.getWidth(), y);
-                }
-                g2d.dispose();
-            }
-
-
         };
-
-        panel.setPreferredSize(new Dimension(800, 600));
-        panel.addMouseListener(new MouseAdapter() {
+        canvasPanel.setBackground(Color.WHITE);
+        canvasPanel.addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e) {
-                if (placingDoor) {
-                    // If placing door, set the location and repaint
-                    doorX = e.getX();
-                    doorY = e.getY();
-                    placingDoor = false;
-                    repaint();
-                }
-                else {
-                    lastPoint = e.getPoint();
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                // If there is a selected object, place it on the canvas at the clicked position
+                if (currentObjectToPlace != null) {
+                    objects.add(currentObjectToPlace.createCopyAtPosition(e.getPoint()));
+                    canvasPanel.repaint();
+                    currentObjectToPlace = null; // Reset the selected object after placing
                 }
             }
         });
+        add(canvasPanel, BorderLayout.CENTER);
 
-        panel.addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                drawLine(lastPoint, e.getPoint());
-                lastPoint = e.getPoint();
-                repaint();
-            }
-        });
-
-        add(panel);
-        setupMenuBar();
-        pack();
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setVisible(true);
     }
 
-    /**
-     * Initializes drawing settings for the canvas.
-     */
-    private void initDrawing() {
-        Graphics2D g2d = canvas.createGraphics();
-        g2d.setColor(Color.BLACK);
-        g2d.setStroke(new BasicStroke(2));
+    // Method to add a button for a furniture object to the right panel
+    private void addFurnitureObjectButton(JPanel panel, myFurnitureObject object) {
+        JButton objectButton = new JButton();
+        objectButton.setLayout(new BorderLayout());
+        objectButton.add(new JLabel(new ImageIcon(createImageForFurnitureObject(object))), BorderLayout.CENTER);
+        objectButton.add(new JLabel(object.getName(), SwingConstants.CENTER), BorderLayout.SOUTH);
+        objectButton.addActionListener(e -> currentObjectToPlace = object);
+        panel.add(objectButton);
     }
 
-    /**
-     * Draws a line between two points.
-     *
-     * @param start The starting point of the line.
-     * @param end   The ending point of the line.
-     */
-    private void drawLine(Point start, Point end) {
-        Graphics2D g2d = canvas.createGraphics();
-        g2d.setColor(Color.BLACK);
-        g2d.drawLine(start.x, start.y, end.x, end.y);
+    // Method to create an image for a furniture object to be used in a button
+    private Image createImageForFurnitureObject(myFurnitureObject object) {  // -----------------------------------
+        Image image = new BufferedImage(50, 50, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = (Graphics2D) image.getGraphics();
+        // g2d.setColor(Color.WHITE);
+        // g2d.fillRect(0, 0, 50, 50);
+        object.draw(g2d);
         g2d.dispose();
+        return image;
     }
 
-    /**
-     * Clears the canvas.
-     */
-    private void clearCanvas() {
-        Graphics2D g2d = canvas.createGraphics();
-        g2d.setComposite(AlphaComposite.Clear);
-        g2d.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        g2d.setComposite(AlphaComposite.SrcOver);
-        g2d.dispose();
-        repaint();
-    }
-
-    /**
-     * Saves the current drawing to a file.
-     */
-    private void saveImage() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Save Image");
-        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile();
-            try {
-                ImageIO.write(canvas, "PNG", file);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
-
-    /**
-     * Loads an image from a file into the canvas.
-     */
-    private void loadImage() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Open Image");
-        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile();
-            try {
-                canvas = ImageIO.read(file);
-                repaint();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
-
-    /**
-     * Shows an About dialog with information about the application.
-     */
-    private void showAbout() {
-        JOptionPane.showMessageDialog(this, "Simple Paint Application\nVersion 1.0\nCreated by ChatGPT", "About", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    /**
-     * Sets up the menu bar with File, Edit, and Help menus.
-     */
-    private void setupMenuBar() {
-        JMenuBar menuBar = new JMenuBar();
-
-        // File Menu
-        JMenu fileMenu = new JMenu("File");
-        JMenuItem saveItem = new JMenuItem("Save");
-        saveItem.addActionListener(e -> saveImage());
-        fileMenu.add(saveItem);
-
-        JMenuItem loadItem = new JMenuItem("Load");
-        loadItem.addActionListener(e -> loadImage());
-        fileMenu.add(loadItem);
-
-        fileMenu.add(new JSeparator()); // Separator
-
-        JMenuItem exitItem = new JMenuItem("Exit");
-        exitItem.addActionListener(e -> System.exit(0));
-        fileMenu.add(exitItem);
-
-        // Edit Menu
-        JMenu editMenu = new JMenu("Edit");
-        JMenuItem clearItem = new JMenuItem("Clear");
-        clearItem.addActionListener(e -> clearCanvas());
-        editMenu.add(clearItem);
-
-        // Help Menu
-        JMenu helpMenu = new JMenu("Help");
-        JMenuItem aboutItem = new JMenuItem("About");
-        aboutItem.addActionListener(e -> showAbout());
-        helpMenu.add(aboutItem);
-
-        menuBar.add(fileMenu);
-        menuBar.add(editMenu);
-        menuBar.add(helpMenu);
-        setJMenuBar(menuBar);
-    }
-
-    private void addAddItemButton() {
-        JButton addItemButton = new JButton("Add Item"); // Create a new button with text "Add Item"
-        addItemButton.addActionListener(e -> {
-            JPopupMenu addItemMenu = new JPopupMenu();
-            JMenuItem essentialsItem = new JMenuItem("Essentials");
-            JMenuItem kitchenItem = new JMenuItem("Kitchen");
-            JMenuItem bathroomItem = new JMenuItem("Bathroom");
-            JMenuItem bedroomItem = new JMenuItem("Bedroom");
-            JMenuItem livingRoomOfficeItem = new JMenuItem("Living Room/Office");
-
-            essentialsItem.addActionListener(actionEvent -> {
-                populateRightPanel(getEssentialsItems());
-            });
-
-            kitchenItem.addActionListener(actionEvent -> {
-                populateRightPanel(getKitchenItems());
-            });
-
-            bathroomItem.addActionListener(actionEvent -> {
-                populateRightPanel(getBathroomItems());
-            });
-
-            bedroomItem.addActionListener(actionEvent -> {
-                populateRightPanel(getBedroomItems());
-            });
-
-            livingRoomOfficeItem.addActionListener(actionEvent -> {
-                populateRightPanel(getLivingRoomOfficeItems());
-            });
-
-            addItemMenu.add(essentialsItem);
-            addItemMenu.add(kitchenItem);
-            addItemMenu.add(bathroomItem);
-            addItemMenu.add(bedroomItem);
-            addItemMenu.add(livingRoomOfficeItem);
-
-            addItemMenu.show(addItemButton, 0, addItemButton.getHeight());
-        });
-        JPanel buttonPanel = new JPanel(); // Create a panel to hold the button
-        buttonPanel.add(addItemButton); // Add the button to the panel
-
-        add(buttonPanel, BorderLayout.WEST);
-
-    }
-
-    private void populateRightPanel(ArrayList<String> items) {
-        rightPanel.removeAll();
-        for (String item : items) {
-            JButton button = new JButton(item);
-            button.addActionListener(e -> {
-                selectedItems.add(item);
-                for (JButton obj : objects) {
-                    obj.setBackground(null);
-                }
-                button.setBackground(Color.YELLOW);
-                if (item.equals("Door")) {
-                    // Enable door placement mode
-                    placingDoor = true;
-                }
-            });
-            objects.add(button);
-            rightPanel.add(button);
-        }
-        revalidate();
-        repaint();
-    }
-
-    private ArrayList<String> getEssentialsItems() {
-        return new ArrayList<>(Arrays.asList("Door", "Window", "Wall", "Rug", "Mirror", "Lamp"));
-    }
-
-    private ArrayList<String> getKitchenItems() {
-        return new ArrayList<>(Arrays.asList("Sink", "Refrigerator", "Dishwasher", "Counterspace", "Cabinets", "Microwave", "Table", "Chair", "Stool"));
-    }
-
-    private ArrayList<String> getBathroomItems() {
-        return new ArrayList<>(Arrays.asList("Sink", "Double Sink", "Toilet", "Bathtub", "Shower", "Combination Tub/Shower", "Floormat"));
-    }
-
-    private ArrayList<String> getBedroomItems() {
-        return new ArrayList<>(Arrays.asList("Bed", "Dresser", "Nightstand", "Chest", "Closet"));
-    }
-
-    private ArrayList<String> getLivingRoomOfficeItems() {
-        return new ArrayList<>(Arrays.asList("Desk", "TV", "TV Stand", "Chair", "Couch", "Coffee Table"));
-    }
-
-    private void resizeCanvas(int width, int height) {
-        BufferedImage newCanvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2d = newCanvas.createGraphics();
-        g2d.drawImage(canvas, 0, 0, width, height, null);
-        g2d.dispose();
-        canvas = newCanvas;
-        repaint();
-    }
-
-    /**
-     * Main method to run the application.
-     *
-     * @param args Command line arguments (not used).
-     */
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new chatgptTesting().setVisible(true));
+        SwingUtilities.invokeLater(chatgptTesting::new);
+    }
+}
+
+interface myFurnitureObject {
+    String getName();
+
+    void draw(Graphics2D g);
+
+    boolean containsPoint(Point point);
+
+    myFurnitureObject createCopyAtPosition(Point position);
+}
+
+class myDoor implements myFurnitureObject {
+    private final int width = 40;
+    private final int height = 90;
+    private double x;
+    private double y;
+
+    public myDoor(double x, double y){
+        this.x = x;
+        this.y = y;
+    }
+    public myDoor(){
+        this.x = 0;
+        this.y = 0;
+    }
+    @Override
+    public String getName() {
+        return "Door";
+    }
+
+    @Override
+    public void draw(Graphics2D g) {
+        g.setColor(Color.BLUE);
+        g.fillRect((int)x, (int)y, width, height);
+    }
+
+    @Override
+    public boolean containsPoint(Point point) {
+        return true; // Always place at the clicked position
+    }
+
+    @Override
+    public myFurnitureObject createCopyAtPosition(Point position) {
+        return new myDoor(position.getX(), position.getY());
+    }
+}
+
+class myWall implements myFurnitureObject {
+    private final int width = 90;
+    private final int height = 10;
+
+    @Override
+    public String getName() {
+        return "Wall";
+    }
+
+    @Override
+    public void draw(Graphics2D g) {
+        g.setColor(Color.GRAY);
+        g.fillRect(0, 0, width, height);
+    }
+
+    @Override
+    public boolean containsPoint(Point point) {
+        return true; // Always place at the clicked position
+    }
+
+    @Override
+    public myFurnitureObject createCopyAtPosition(Point position) {
+        return new myWall();
+    }
+}
+
+class myRug implements myFurnitureObject {
+    private final int width = 80;
+    private final int height = 40;
+
+    @Override
+    public String getName() {
+        return "Rug";
+    }
+
+    @Override
+    public void draw(Graphics2D g) {
+        g.setColor(Color.RED);
+        g.fillRect(0, 0, width, height);
+    }
+
+    @Override
+    public boolean containsPoint(Point point) {
+        return true; // Always place at the clicked position
+    }
+
+    @Override
+    public myFurnitureObject createCopyAtPosition(Point position) {
+        return new myRug();
+    }
+}
+
+class myWindow implements myFurnitureObject {
+    private final int width = 30;
+    private final int height = 30;
+
+    @Override
+    public String getName() {
+        return "Window";
+    }
+
+    @Override
+    public void draw(Graphics2D g) {
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, width, height);
+        g.setColor(Color.BLACK);
+        g.drawRect(0, 0, width, height);
+    }
+
+    @Override
+    public boolean containsPoint(Point point) {
+        return true; // Always place at the clicked position
+    }
+
+    @Override
+    public myFurnitureObject createCopyAtPosition(Point position) {
+        return new myWindow();
+    }
+}
+
+class myMirror implements myFurnitureObject {
+    private final int width = 40;
+    private final int height = 40;
+
+    @Override
+    public String getName() {
+        return "Mirror";
+    }
+
+    @Override
+    public void draw(Graphics2D g) {
+        g.setColor(Color.CYAN);
+        g.fillRect(0, 0, width, height);
+    }
+
+    @Override
+    public boolean containsPoint(Point point) {
+        return true; // Always place at the clicked position
+    }
+
+    @Override
+    public myFurnitureObject createCopyAtPosition(Point position) {
+        return new myMirror();
+    }
+}
+
+class myLamp implements myFurnitureObject {
+    private final int width = 20;
+    private final int height = 40;
+
+    @Override
+    public String getName() {
+        return "Lamp";
+    }
+
+    @Override
+    public void draw(Graphics2D g) {
+        g.setColor(Color.YELLOW);
+        g.fillRect(0, 0, width, height);
+    }
+
+    @Override
+    public boolean containsPoint(Point point) {
+        return true; // Always place at the clicked position
+    }
+
+    @Override
+    public myFurnitureObject createCopyAtPosition(Point position) {
+        return new myLamp();
     }
 }

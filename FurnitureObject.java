@@ -1,12 +1,8 @@
 import java.awt.*;
 import java.awt.geom.*;
+import java.awt.Graphics2D;
 
-public abstract class FurnitureObject {
-    private String name;
-    public FurnitureObject(){};
-    public String getName() {return name;}
-    public abstract void drawFurniture(Graphics2D g2d);
-    public abstract void rotate90degrees(Graphics2D g2d);
-    public abstract void moveFurnitureObject(Graphics2D g2d);
-
+public interface FurnitureObject {
+    public String getName();
+    public void draw(Graphics2D g2d);
 }
