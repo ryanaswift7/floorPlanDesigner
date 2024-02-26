@@ -1,3 +1,7 @@
+package FurnitureObjects.Essentials;
+
+import Interfaces.FurnitureObject;
+
 import java.awt.*;
 import java.awt.geom.*;
 
@@ -10,7 +14,11 @@ public class Rug implements FurnitureObject {
         this.y = y;
         this.name = "Rug";
     }
-
+    public Rug() {
+        this.x = 0;
+        this.y = 0;
+        this.name = "Rug";
+    }
     @Override
     public void draw(Graphics2D g2d) {
         // Set the color of the rug to light gray
@@ -25,6 +33,11 @@ public class Rug implements FurnitureObject {
         // Draw the rectangle (rug)
         Rectangle2D.Double rug = new Rectangle2D.Double(rectX, rectY, rectWidth, rectHeight);
         g2d.fill(rug);
+    }
+
+    @Override
+    public FurnitureObject createCopyAtPosition(Point position) {
+        return null;
     }
 
     @Override

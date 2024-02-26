@@ -1,3 +1,7 @@
+package FurnitureObjects.Essentials;
+
+import Interfaces.FurnitureObject;
+
 import java.awt.*;
 import java.awt.geom.*;
 
@@ -8,6 +12,11 @@ public class Lamp implements FurnitureObject {
     public Lamp(int x, int y) {
         this.x = x;
         this.y = y;
+        this.name = "Lamp";
+    }
+    public Lamp() {
+        this.x = 0;
+        this.y = 0;
         this.name = "Lamp";
     }
 
@@ -31,7 +40,13 @@ public class Lamp implements FurnitureObject {
     }
 
     @Override
+    public FurnitureObject createCopyAtPosition(Point position) {
+        return new Lamp(position.x, position.y);
+    }
+
+    @Override
     public String getName() {
         return name;
     }
 }
+

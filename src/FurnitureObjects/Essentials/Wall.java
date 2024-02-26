@@ -1,3 +1,7 @@
+package FurnitureObjects.Essentials;
+
+import Interfaces.FurnitureObject;
+
 import java.awt.*;
 
 public class Wall implements FurnitureObject {
@@ -12,6 +16,15 @@ public class Wall implements FurnitureObject {
         this.y2 = y2;
         this.name = "Wall";
     }
+    public Wall() {
+        // Snap the coordinates to the grid
+        this.x1 = 0;
+        this.y1 = 0;
+        this.x2 = 0;
+        this.y2 = 0;
+        this.name = "Wall";
+    }
+
 
     @Override
     public String getName() {
@@ -35,6 +48,11 @@ public class Wall implements FurnitureObject {
 
         // Draw the wall
         g.drawLine(x1, y1, x2, y2);
+    }
+
+    @Override
+    public FurnitureObject createCopyAtPosition(Point position) {
+        return null;
     }
 
 }

@@ -1,19 +1,28 @@
 // Door.java
+package FurnitureObjects.Essentials;
+import Interfaces.FurnitureObject;
+
 import java.awt.*;
-import javax.swing.JPanel;
 
 public class Door implements FurnitureObject {
     private int x, y, width;
-    private static String name;
+    private static String name = "Door";
 
     public Door(int x, int y, int width) {
         this.x = x;
         this.y = y;
         this.width = width;
     }
+    // empty constructor used for creating rightPanel boxes
+    public Door() {
+        this.x = 0;
+        this.y = 0;
+        this.width = 40;
+    }
 
     @Override
     public void draw(Graphics2D g) {
+        Stroke defaultStroke = g.getStroke(); // Save the default stroke
         // Draw the door frame
         g.setColor(Color.BLACK);
         g.drawLine(x, y, x + width, y); // Horizontal line
@@ -44,7 +53,13 @@ public class Door implements FurnitureObject {
 
         // Draw the arc for door swing range
         g.drawArc(centerX - radius, centerY - radius, 2 * radius, 2 * radius, startAngle, extent);
+
+        g.setStroke(defaultStroke); // Reset stroke to default
+
     }
 
     public String getName(){return name;}
+    public FurnitureObject createCopyAtPosition(Point position) {
+        return new Door(position.x, position.y, 50);
+    }
 }

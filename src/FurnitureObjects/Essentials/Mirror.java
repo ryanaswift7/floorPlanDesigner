@@ -1,3 +1,7 @@
+package FurnitureObjects.Essentials;
+
+import Interfaces.FurnitureObject;
+
 import java.awt.*;
 import java.awt.geom.*;
 
@@ -10,6 +14,14 @@ public class Mirror implements FurnitureObject {
         this.y1 = y1;
         this.x2 = x2;
         this.y2 = y2;
+        this.name = "Window";
+    }
+
+    public Mirror() {
+        this.x1 = 0;
+        this.y1 = 0;
+        this.x2 = 0;
+        this.y2 = 0;
         this.name = "Window";
     }
 
@@ -29,6 +41,11 @@ public class Mirror implements FurnitureObject {
 
         // Draw the window line
         g2d.drawLine(x1, y1, x2, y2);
+    }
+
+    @Override
+    public FurnitureObject createCopyAtPosition(Point position) {
+        return null;
     }
 
     @Override

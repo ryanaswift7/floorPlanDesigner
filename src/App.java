@@ -7,6 +7,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import FurnitureObjects.Essentials.*;
+import Interfaces.*;
+
 
 /**
  * Simple Paint Application using Java Swing.
@@ -19,8 +24,9 @@ public class App extends JFrame {
     private BufferedImage canvas;
     private Point lastPoint;
     private JPanel rightPanel;
-    private ArrayList<String> selectedItems;
+    private ArrayList<FurnitureObject> selectedItems;
     private ArrayList<JButton> objects;
+    private FurnitureObject currentObjectToPlace;
     /**
      * Constructor to initialize the application.
      */
@@ -52,6 +58,9 @@ public class App extends JFrame {
                 super.paintComponent(g);
                 g.drawImage(canvas, 0, 0, null);
                 drawGrid(g);
+                for (FurnitureObject item : selectedItems){
+                    item.draw((Graphics2D) g);
+                }
             }
 
             private void drawGrid(Graphics g) {
@@ -86,6 +95,19 @@ public class App extends JFrame {
 
         };
 
+        panel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                // If there is a selected object, place it on the canvas at the clicked position
+                if (currentObjectToPlace != null) {
+                    selectedItems.add(currentObjectToPlace.createCopyAtPosition(e.getPoint()));
+                    panel.repaint();
+                    currentObjectToPlace = null; // Reset the selected object after placing
+                }
+            }
+        });
+
         panel.setPreferredSize(new Dimension(800, 600));
         panel.addMouseListener(new MouseAdapter() {
             @Override
@@ -108,6 +130,8 @@ public class App extends JFrame {
         pack();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+
+
     }
 
     /**
@@ -246,7 +270,7 @@ public class App extends JFrame {
             essentialsItem.addActionListener(actionEvent -> {
                 populateRightPanel(getEssentialsItems());
             });
-
+/*
             kitchenItem.addActionListener(actionEvent -> {
                 populateRightPanel(getKitchenItems());
             });
@@ -262,7 +286,7 @@ public class App extends JFrame {
             livingRoomOfficeItem.addActionListener(actionEvent -> {
                 populateRightPanel(getLivingRoomOfficeItems());
             });
-
+*/
             addItemMenu.add(essentialsItem);
             addItemMenu.add(kitchenItem);
             addItemMenu.add(bathroomItem);
@@ -277,10 +301,27 @@ public class App extends JFrame {
         add(buttonPanel, BorderLayout.WEST);
 
     }
-    private void populateRightPanel(ArrayList<String> items) {
+    private void populateRightPanel(ArrayList<FurnitureObject> items) {
         rightPanel.removeAll();
-        for (String item : items) {
-            JButton button = new JButton(item);
+        for (FurnitureObject item : items) {
+            JButton itemButton = new JButton();
+            itemButton.setLayout(new BorderLayout());
+            itemButton.add(new JLabel(new ImageIcon(createImageForFurnitureObject(item))), BorderLayout.CENTER);
+            itemButton.add(new JLabel(item.getName(), SwingConstants.CENTER), BorderLayout.SOUTH);
+            itemButton.addActionListener(e -> {
+                currentObjectToPlace = item;
+                // selectedItems.add(item);
+                for (JButton obj : objects) {
+                    obj.setBackground(null);
+                }
+                itemButton.setBackground(Color.YELLOW);
+
+            });
+            objects.add(itemButton);
+            rightPanel.add(itemButton);
+        }
+            /*
+            JButton button = new JButton(item.getName());
             button.addActionListener(e -> {
                 selectedItems.add(item);
                 for (JButton obj : objects) {
@@ -291,12 +332,22 @@ public class App extends JFrame {
             objects.add(button);
             rightPanel.add(button);
         }
+
+             */
         revalidate();
         repaint();
     }
 
-    private ArrayList<String> getEssentialsItems() {
-        return new ArrayList<>(Arrays.asList("Door", "Window", "Wall", "Rug", "Mirror", "Lamp"));
+    private Image createImageForFurnitureObject(FurnitureObject object) {  // -----------------------------------
+        Image image = new BufferedImage(50, 50, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = (Graphics2D) image.getGraphics();
+        object.draw(g2d);
+        g2d.dispose();
+        return image;
+    }
+
+    private ArrayList<FurnitureObject> getEssentialsItems() {
+        return new ArrayList<>(Arrays.asList(new Door(), new FurnitureObjects.Essentials.Window(), new Wall(), new Rug(), new Mirror(), new Lamp()));
     }
 
     private ArrayList<String> getKitchenItems() {
