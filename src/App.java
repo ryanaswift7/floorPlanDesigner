@@ -24,7 +24,7 @@ public class App extends JFrame {
     private BufferedImage canvas;
     private Point lastPoint;
     private JPanel rightPanel;
-    private ArrayList<FurnitureObject> selectedItems;
+    private ArrayList<FurnitureObject> layoutItems;
     private ArrayList<JButton> objects;
     private FurnitureObject currentObjectToPlace;
     /**
@@ -40,7 +40,7 @@ public class App extends JFrame {
         rightPanel.setLayout(new GridLayout(0, 1));
         add(rightPanel, BorderLayout.EAST);
 
-        selectedItems = new ArrayList<>();
+        layoutItems = new ArrayList<>();
         objects = new ArrayList<>();
     }
 
@@ -58,7 +58,7 @@ public class App extends JFrame {
                 super.paintComponent(g);
                 g.drawImage(canvas, 0, 0, null);
                 drawGrid(g);
-                for (FurnitureObject item : selectedItems){
+                for (FurnitureObject item : layoutItems){
                     item.draw((Graphics2D) g);
                 }
             }
@@ -101,7 +101,7 @@ public class App extends JFrame {
                 super.mouseClicked(e);
                 // If there is a selected object, place it on the canvas at the clicked position
                 if (currentObjectToPlace != null) {
-                    selectedItems.add(currentObjectToPlace.createCopyAtPosition(e.getPoint()));
+                    layoutItems.add(currentObjectToPlace.createCopyAtPosition(e.getPoint()));
                     panel.repaint();
                     currentObjectToPlace = null; // Reset the selected object after placing
                 }
