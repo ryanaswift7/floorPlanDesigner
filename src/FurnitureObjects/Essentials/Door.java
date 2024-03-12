@@ -1,10 +1,11 @@
 // Door.java
 package FurnitureObjects.Essentials;
 import Interfaces.FurnitureObject;
+import Interfaces.Movable;
 
 import java.awt.*;
 
-public class Door implements FurnitureObject {
+public class Door implements FurnitureObject, Movable {
     private int x, y, width;
     private static String name = "Door";
 
@@ -61,5 +62,19 @@ public class Door implements FurnitureObject {
     public String getName(){return name;}
     public FurnitureObject createCopyAtPosition(Point position) {
         return new Door(position.x, position.y, 50);
+    }
+    public Rectangle getBoundingBox() {
+        return new Rectangle(x, y, width, width);
+    }
+
+    @Override
+    public Point getPosition() {
+        return new Point(x, y);
+    }
+
+    @Override
+    public void setPosition(Point newPosition) {
+        this.x = newPosition.x;
+        this.y = newPosition.y;
     }
 }

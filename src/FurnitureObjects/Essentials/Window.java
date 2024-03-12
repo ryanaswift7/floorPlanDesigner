@@ -52,4 +52,12 @@ public class Window implements FurnitureObject {
     public String getName() {
         return name;
     }
+    public Rectangle getBoundingBox() {
+        if (y1 == y2) {
+            return new Rectangle(x1, y1, x2-x1, 0);
+        }
+        else { // x1 == x2
+            return new Rectangle(x1, y1, 0, y2-y1);
+        }
+    }
 }

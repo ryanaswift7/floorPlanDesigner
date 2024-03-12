@@ -9,6 +9,9 @@ public class chatgptTesting extends JFrame {
 
     private ArrayList<myFurnitureObject> objects;
     private myFurnitureObject currentObjectToPlace;
+    private Rectangle selectionBox;
+    private Point selectionStartPoint;
+    private Point selectionEndPoint;
 
     public chatgptTesting() {
         super("Furniture Drawing App");
@@ -19,6 +22,8 @@ public class chatgptTesting extends JFrame {
         // Initialize the objects list
         objects = new ArrayList<>();
 
+
+
         // Right panel to contain buttons for each object
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
@@ -26,22 +31,28 @@ public class chatgptTesting extends JFrame {
 
         // Create buttons with drawings and names for each object and add them to the right panel
         addFurnitureObjectButton(rightPanel, new myDoor());
-        addFurnitureObjectButton(rightPanel, new myWall());
-        addFurnitureObjectButton(rightPanel, new myRug());
-        addFurnitureObjectButton(rightPanel, new myWindow());
-        addFurnitureObjectButton(rightPanel, new myMirror());
-        addFurnitureObjectButton(rightPanel, new myLamp());
+//        addFurnitureObjectButton(rightPanel, new myWall());
+//        addFurnitureObjectButton(rightPanel, new myRug());
+//        addFurnitureObjectButton(rightPanel, new myWindow());
+//        addFurnitureObjectButton(rightPanel, new myMirror());
+//        addFurnitureObjectButton(rightPanel, new myLamp());
 
         // Canvas panel to draw objects
         JPanel canvasPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
                 // Draw objects
                 for (myFurnitureObject object : objects) {
                     object.draw((Graphics2D) g);
                 }
+                if (selectionBox != null) {
+                    g2d.setColor(Color.RED); // Change color to red
+                    g2d.draw(selectionBox);
+                }
             }
+
         };
         canvasPanel.setBackground(Color.WHITE);
         canvasPanel.addMouseListener(new MouseAdapter() {
@@ -55,10 +66,51 @@ public class chatgptTesting extends JFrame {
                     currentObjectToPlace = null; // Reset the selected object after placing
                 }
             }
+            @Override
+            public void mousePressed(MouseEvent e) {
+                    selectionStartPoint = e.getPoint();
+                    selectionEndPoint = selectionStartPoint;
+                    selectionBox = new Rectangle(selectionStartPoint.x, selectionStartPoint.y, 0, 0);
+                    canvasPanel.repaint();
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (selectionBox != null)
+                    selectObjects();
+            }
         });
+
+        canvasPanel.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                selectionEndPoint = e.getPoint();
+                int x = Math.min(selectionStartPoint.x, selectionEndPoint.x);
+                int y = Math.min(selectionStartPoint.y, selectionEndPoint.y);
+                int width = Math.abs(selectionStartPoint.x - selectionEndPoint.x);
+                int height = Math.abs(selectionStartPoint.y - selectionEndPoint.y);
+                selectionBox.setBounds(x, y, width, height);
+
+                canvasPanel.repaint();
+            }
+        });
+
         add(canvasPanel, BorderLayout.CENTER);
 
         setVisible(true);
+    }
+
+    // Method to select objects within the selection box
+    public void selectObjects() {
+        for (myFurnitureObject obj : objects) {
+            Rectangle objBounds = obj.getBoundingBox();
+            if (objBounds != null && selectionBox.intersects(objBounds)) {
+                // Mark obj as selected (you can store selected objects in a separate list or mark them somehow)
+                System.out.println("Object selected: " + obj.getName());
+            }
+        }
+        selectionBox = null; // Reset selection box after selection is done
+        repaint();
     }
 
     // Method to add a button for a furniture object to the right panel
@@ -95,6 +147,9 @@ interface myFurnitureObject {
     boolean containsPoint(Point point);
 
     myFurnitureObject createCopyAtPosition(Point position);
+    public Rectangle getBoundingBox();
+
+
 }
 
 class myDoor implements myFurnitureObject {
@@ -131,8 +186,12 @@ class myDoor implements myFurnitureObject {
     public myFurnitureObject createCopyAtPosition(Point position) {
         return new myDoor(position.getX(), position.getY());
     }
+    // Method to get the bounding rectangle of the object
+    public Rectangle getBoundingBox() {
+        return new Rectangle((int)x, (int)y, width, height);
+    }
 }
-
+/*
 class myWall implements myFurnitureObject {
     private final int width = 90;
     private final int height = 10;
@@ -264,3 +323,5 @@ class myLamp implements myFurnitureObject {
         return new myLamp();
     }
 }
+
+ */

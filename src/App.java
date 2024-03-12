@@ -9,8 +9,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+
 import FurnitureObjects.Essentials.*;
 import Interfaces.*;
+import Utils.MoveUtility;
 
 
 /**
@@ -22,16 +24,19 @@ import Interfaces.*;
 public class App extends JFrame {
 
     private BufferedImage canvas;
-    private Point lastPoint;
     private JPanel rightPanel;
     private ArrayList<FurnitureObject> layoutItems;
+    private ArrayList<FurnitureObject> selectedItems;
     private ArrayList<JButton> objects;
     private FurnitureObject currentObjectToPlace;
+    private Rectangle selectionBox;
+    private Point selectionStartPoint;
+    private Point selectionEndPoint;
     /**
      * Constructor to initialize the application.
      */
     public App() {
-        super("Simple Paint Application");
+        super("Interactive Floor Plan Designer");
         initUI();
         initDrawing();
         addAddItemButton();
@@ -41,6 +46,7 @@ public class App extends JFrame {
         add(rightPanel, BorderLayout.EAST);
 
         layoutItems = new ArrayList<>();
+        selectedItems = new ArrayList<>();
         objects = new ArrayList<>();
     }
 
@@ -52,7 +58,7 @@ public class App extends JFrame {
         canvas = new BufferedImage(800, 600, BufferedImage.TYPE_INT_ARGB);
         clearCanvas();
 
-        JPanel panel = new JPanel() {
+        JPanel canvasPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -60,6 +66,11 @@ public class App extends JFrame {
                 drawGrid(g);
                 for (FurnitureObject item : layoutItems){
                     item.draw((Graphics2D) g);
+                }
+                Graphics2D g2d = (Graphics2D) g;
+                if (selectionBox != null) {
+                    g2d.setColor(Color.RED); // Change color to red
+                    g2d.draw(selectionBox);
                 }
             }
 
@@ -90,48 +101,199 @@ public class App extends JFrame {
                     g2d.drawLine(0, y, canvas.getWidth(), y);
                 }
                 g2d.dispose();
+
             }
+
 
 
         };
 
-        panel.addMouseListener(new MouseAdapter() {
+        canvasPanel.addMouseListener(new MouseAdapter() {
+            boolean clickFlag;
             @Override
             public void mouseClicked(MouseEvent e) {
+                clickFlag = true;
                 super.mouseClicked(e);
                 // If there is a selected object, place it on the canvas at the clicked position
                 if (currentObjectToPlace != null) {
                     layoutItems.add(currentObjectToPlace.createCopyAtPosition(e.getPoint()));
-                    panel.repaint();
+                    canvasPanel.repaint();
                     currentObjectToPlace = null; // Reset the selected object after placing
+                }
+
+            }
+            @Override
+            public void mousePressed(MouseEvent e) {
+                clickFlag = false;
+                selectionStartPoint = e.getPoint();
+                selectionEndPoint = selectionStartPoint;
+                selectionBox = new Rectangle(selectionStartPoint.x, selectionStartPoint.y, 0, 0);
+                canvasPanel.repaint();
+            }
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                selectObjects();
+                if (!selectedItems.isEmpty()) {
+                    displaySelectMenu(canvasPanel, e);
                 }
             }
         });
 
-        panel.setPreferredSize(new Dimension(800, 600));
-        panel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                lastPoint = e.getPoint();
-            }
-        });
+        canvasPanel.setPreferredSize(new Dimension(800, 600));
 
-        panel.addMouseMotionListener(new MouseMotionAdapter() {
+
+        canvasPanel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                drawLine(lastPoint, e.getPoint());
-                lastPoint = e.getPoint();
-                repaint();
+                selectionEndPoint = e.getPoint();
+                int x = Math.min(selectionStartPoint.x, selectionEndPoint.x);
+                int y = Math.min(selectionStartPoint.y, selectionEndPoint.y);
+                int width = Math.abs(selectionStartPoint.x - selectionEndPoint.x);
+                int height = Math.abs(selectionStartPoint.y - selectionEndPoint.y);
+                selectionBox.setBounds(x, y, width, height);
+                canvasPanel.repaint();
             }
         });
 
-        add(panel);
+        add(canvasPanel);
         setupMenuBar();
         pack();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
 
+    }
+    public void selectObjects() {
+        for (FurnitureObject item : layoutItems) {
+            Rectangle objBounds = item.getBoundingBox();
+            if (objBounds != null && selectionBox.intersects(objBounds)) {
+                // Mark obj as selected (you can store selected objects in a separate list or mark them somehow)
+                System.out.println("Object selected: " + item.getName());
+                selectedItems.add(item);
+            }
+        }
+        selectionBox = null; // Reset selection box after selection is done
+        repaint();
+    }
+
+    public void displaySelectMenu(JPanel canvasPanel, MouseEvent event) {
+        JPopupMenu selectMenu = new JPopupMenu();
+
+        // Menu options
+        JMenuItem moveItem = new JMenuItem("Move");
+        JMenuItem deleteItem = new JMenuItem("Delete");
+
+
+        // Submenu options for Resize
+        JMenu resizeSubMenu = new JMenu("Resize");
+        JMenuItem smallResizeItem = new JMenuItem("Small");
+        JMenuItem mediumResizeItem = new JMenuItem("Medium (Default)");
+        JMenuItem largeResizeItem = new JMenuItem("Large");
+        resizeSubMenu.add(smallResizeItem);
+        resizeSubMenu.add(mediumResizeItem);
+        resizeSubMenu.add(largeResizeItem);
+
+        // Submenu options for Rotate
+        JMenu rotateSubMenu = new JMenu("Rotate");
+        JMenuItem rotate90Item = new JMenuItem("90 degrees");
+        JMenuItem rotate180Item = new JMenuItem("180 degrees");
+        JMenuItem rotate270Item = new JMenuItem("270 degrees");
+        rotateSubMenu.add(rotate90Item);
+        rotateSubMenu.add(rotate180Item);
+        rotateSubMenu.add(rotate270Item);
+
+        // Add menu items to popup menu
+        selectMenu.add(moveItem);
+        selectMenu.add(deleteItem);
+        selectMenu.add(resizeSubMenu);
+        selectMenu.add(rotateSubMenu);
+
+        // -------------------------------------- IMPLEMENT MOVE ---------------------------
+        moveItem.addActionListener(e -> MoveUtility.moveSelectedItemsOnPanel(selectedItems, canvasPanel));
+
+        // ---------------- END MOVE IMPLEMENTATION
+        deleteItem.addActionListener(e -> {
+            for (FurnitureObject item : selectedItems) {
+                layoutItems.remove(item);
+            }
+            repaint();
+            selectedItems.clear();
+        });
+
+        smallResizeItem.addActionListener(e -> {
+            // Implement action for Small Resize
+            for (FurnitureObject item : selectedItems) {
+                if (item instanceof Resizable resizeItem) {
+                    resizeItem.setSmall();
+                }
+            }
+            repaint();
+            selectedItems.clear();
+
+        });
+
+        mediumResizeItem.addActionListener(e -> {
+            // Implement action for Medium Resize
+            for (FurnitureObject item : selectedItems) {
+                if (item instanceof Resizable resizeItem) {
+                    resizeItem.setMedium();
+                }
+            }
+            repaint();
+            selectedItems.clear();
+
+        });
+
+        largeResizeItem.addActionListener(e -> {
+            // Implement action for Large Resize
+            for (FurnitureObject item : selectedItems) {
+                if (item instanceof Resizable resizeItem) {
+                    resizeItem.setLarge();
+                }
+            }
+            repaint();
+            selectedItems.clear();
+
+        });
+
+        rotate90Item.addActionListener(e -> {
+            // Implement action for Rotate 90 degrees
+            for (FurnitureObject item : selectedItems) {
+                if (item instanceof Rotatable rotateItem) {
+                    rotateItem.rotate90degrees();
+                }
+            }
+            repaint();
+            selectedItems.clear();
+
+        });
+
+        rotate180Item.addActionListener(e -> {
+            // Implement action for Rotate 180 degrees
+            for (FurnitureObject item : selectedItems) {
+                if (item instanceof Rotatable rotateItem) {
+                    rotateItem.rotate180degrees();
+                }
+            }
+            repaint();
+            selectedItems.clear();
+
+        });
+
+        rotate270Item.addActionListener(e -> {
+            // Implement action for Rotate 270 degrees
+            for (FurnitureObject item : selectedItems) {
+                if (item instanceof Rotatable rotateItem) {
+                    rotateItem.rotate270degrees();
+                }
+            }
+            repaint();
+            selectedItems.clear();
+
+        });
+
+        // Display the popup menu
+        selectMenu.show(SwingUtilities.getRoot(canvasPanel), event.getX(), event.getY());
     }
 
     /**

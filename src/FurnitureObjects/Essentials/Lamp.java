@@ -8,15 +8,17 @@ import java.awt.geom.*;
 public class Lamp implements FurnitureObject {
     private int x, y;
     private String name;
+    private int circleRadius;
 
     public Lamp(int x, int y) {
         this.x = x;
         this.y = y;
         this.name = "Lamp";
     }
+    // no params => icon constructor
     public Lamp() {
-        this.x = 0;
-        this.y = 0;
+        this.x = 25;
+        this.y = 25;
         this.name = "Lamp";
     }
 
@@ -26,7 +28,7 @@ public class Lamp implements FurnitureObject {
         g2d.setColor(new Color(255, 255, 153)); // light yellow
 
         // Calculate the coordinates for the circle to be centered at (x, y)
-        int circleRadius = 20; // radius of the circle
+        circleRadius = 20; // radius of the circle
         int circleX = x - circleRadius; // x-coordinate of the top-left corner of the bounding box
         int circleY = y - circleRadius; // y-coordinate of the top-left corner of the bounding box
 
@@ -47,6 +49,9 @@ public class Lamp implements FurnitureObject {
     @Override
     public String getName() {
         return name;
+    }
+    public Rectangle getBoundingBox(){
+        return new Rectangle(x, y, circleRadius, circleRadius);
     }
 }
 

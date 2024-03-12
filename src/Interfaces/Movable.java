@@ -1,8 +1,8 @@
 package Interfaces;
 
+import java.awt.*;
+
 public interface Movable {
-    public double getInitialPosition();
-    public double getNewPosition();
-    public double getChangeInPosition();
-    public void drawMovedObject();
+    public Point getPosition();
+    public void setPosition(Point newPosition);
 }

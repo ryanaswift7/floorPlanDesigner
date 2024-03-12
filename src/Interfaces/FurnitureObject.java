@@ -7,6 +7,9 @@ public interface FurnitureObject {
     public String getName();
     public void draw(Graphics2D g2d);
     public FurnitureObject createCopyAtPosition(Point position);
+    public Rectangle getBoundingBox();
+
+
     // public void drawIcon(Graphics2D g2d);
     // public boolean isResizable();
     // public boolean isRotatable();
