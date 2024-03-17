@@ -67,11 +67,11 @@ public class MoveUtility {
             }
         });
 
-        // TODO: haven't quite figured out how to restore previous adapters
         canvasPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
                 // Restore all previous adapters by removing the one we just added, then restoring all previous ones
+                selectedItems.clear();
                 MouseAdapterHandler.removeAllMouseAdapters();
                 MouseAdapterHandler.restoreSavedMouseAdapters();
             }

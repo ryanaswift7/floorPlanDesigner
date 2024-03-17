@@ -42,7 +42,7 @@ public class Lamp implements FurnitureObject {
     }
 
     @Override
-    public FurnitureObject createCopyAtPosition(Point position) {
+    public FurnitureObject createObjectAtPosition(Point position) {
         return new Lamp(position.x, position.y);
     }
 

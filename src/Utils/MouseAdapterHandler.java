@@ -33,13 +33,11 @@ public class MouseAdapterHandler {
         for (MouseListener listener : savedMouseListeners) {
             canvasPanel.removeMouseListener(listener);
         }
-        //savedMouseListeners.clear();
 
         // Remove all MouseMotionListeners
         for (MouseMotionListener listener : savedMouseMotionListeners) {
             canvasPanel.removeMouseMotionListener(listener);
         }
-        //savedMouseMotionListeners.clear();
     }
 
     public static void restoreSavedMouseAdapters() {
@@ -47,12 +45,10 @@ public class MouseAdapterHandler {
         for (MouseListener listener : savedMouseListeners) {
             canvasPanel.addMouseListener(listener);
         }
-        //savedMouseListeners.clear();
 
         // Restore saved MouseMotionListeners
         for (MouseMotionListener listener : savedMouseMotionListeners) {
             canvasPanel.addMouseMotionListener(listener);
         }
-        //savedMouseMotionListeners.clear();
     }
 }

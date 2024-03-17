@@ -1,28 +1,26 @@
 package FurnitureObjects.Essentials;
 
 import Interfaces.FurnitureObject;
+import Interfaces.Movable;
 
+import javax.swing.*;
 import java.awt.*;
 
-public class Wall implements FurnitureObject {
-    private int x1, y1, x2, y2;
-    private String name;
+public class Wall implements FurnitureObject, Movable {
+    private int x1, y1, x2, y2, deltaX, deltaY;
+    private static final String name = "Wall";
 
     public Wall(int x1, int y1, int x2, int y2) {
-        // Snap the coordinates to the grid
         this.x1 = x1;
         this.y1 = y1;
         this.x2 = x2;
         this.y2 = y2;
-        this.name = "Wall";
     }
     public Wall() {
-        // Snap the coordinates to the grid
-        this.x1 = 0;
+        this.x1 = 25;
         this.y1 = 0;
-        this.x2 = 0;
-        this.y2 = 0;
-        this.name = "Wall";
+        this.x2 = 25;
+        this.y2 = 50;
     }
 
 
@@ -33,6 +31,8 @@ public class Wall implements FurnitureObject {
 
     @Override
     public void draw(Graphics2D g) {
+        Stroke defaultStroke = g.getStroke(); // Save the default stroke
+
         // Set the thickness of the wall
         g.setStroke(new BasicStroke(3)); // Thick black line
 
@@ -46,20 +46,50 @@ public class Wall implements FurnitureObject {
         else { y2 = y1; }
 
 
+        snapToGrid();
         // Draw the wall
         g.drawLine(x1, y1, x2, y2);
+        g.setStroke(defaultStroke); // Reset stroke to default
+
     }
 
     @Override
-    public FurnitureObject createCopyAtPosition(Point position) {
-        return null;
+    public FurnitureObject createObjectAtPosition(Point position) {
+        return new Wall(position.x, position.y, position.x, position.y + 5);
+    }
+    public void updateWallEndpoint(Point point, JPanel canvasPanel) {
+        x2 = point.x;
+        y2 = point.y;
     }
     public Rectangle getBoundingBox() {
         if (y1 == y2) {
-            return new Rectangle(x1, y1, x2-x1, 0);
+            return new Rectangle(x1, y1-2, x2-x1, 4);
         }
         else { // x1 == x2
-            return new Rectangle(x1, y1, 0, y2-y1);
+            return new Rectangle(x1-2, y1, 4, y2-y1);
         }
+    }
+
+    private void snapToGrid() {
+        int gridSize = 20;
+        x1 = (int) (Math.round(x1 / (double) gridSize) * gridSize);
+        y1 = (int) (Math.round(y1 / (double) gridSize) * gridSize);
+        x2 = (int) (Math.round(x2 / (double) gridSize) * gridSize);
+        y2 = (int) (Math.round(y2 / (double) gridSize) * gridSize);
+    }
+
+    @Override
+    public Point getPosition() {
+        deltaX = x2 - x1;
+        deltaY = y2 - y1;
+        return new Point(x1, y1);
+    }
+
+    @Override
+    public void setPosition(Point newPosition) {
+        x1 = newPosition.x;
+        y1 = newPosition.y;
+        x2 = x1 + deltaX;
+        y2 = y1 + deltaY;
     }
 }

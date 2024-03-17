@@ -37,7 +37,7 @@ public class Rug implements FurnitureObject {
     }
 
     @Override
-    public FurnitureObject createCopyAtPosition(Point position) {
+    public FurnitureObject createObjectAtPosition(Point position) {
         return null;
     }
 

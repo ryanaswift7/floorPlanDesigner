@@ -44,7 +44,7 @@ public class Mirror implements FurnitureObject {
     }
 
     @Override
-    public FurnitureObject createCopyAtPosition(Point position) {
+    public FurnitureObject createObjectAtPosition(Point position) {
         return null;
     }
 

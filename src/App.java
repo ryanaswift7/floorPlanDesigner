@@ -3,6 +3,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,11 +28,13 @@ public class App extends JFrame {
     private JPanel rightPanel;
     private ArrayList<FurnitureObject> layoutItems;
     private ArrayList<FurnitureObject> selectedItems;
-    private ArrayList<JButton> objects;
+    private ArrayList<JButton> rightButtons;
     private FurnitureObject currentObjectToPlace;
     private Rectangle selectionBox;
     private Point selectionStartPoint;
     private Point selectionEndPoint;
+    private JTextField messageField;
+
     /**
      * Constructor to initialize the application.
      */
@@ -39,15 +42,13 @@ public class App extends JFrame {
         super("Interactive Floor Plan Designer");
         initUI();
         initDrawing();
-        addAddItemButton();
-
-        rightPanel = new JPanel();
-        rightPanel.setLayout(new GridLayout(0, 1));
-        add(rightPanel, BorderLayout.EAST);
+        addLeftPanel();
+        initRightPanel();
+        setMessage("Welcome to the Interactive Floor Plan Designer!");
 
         layoutItems = new ArrayList<>();
         selectedItems = new ArrayList<>();
-        objects = new ArrayList<>();
+        rightButtons = new ArrayList<>();
     }
 
     /**
@@ -109,32 +110,41 @@ public class App extends JFrame {
         };
 
         canvasPanel.addMouseListener(new MouseAdapter() {
-            boolean clickFlag;
             @Override
             public void mouseClicked(MouseEvent e) {
-                clickFlag = true;
                 super.mouseClicked(e);
                 // If there is a selected object, place it on the canvas at the clicked position
-                if (currentObjectToPlace != null) {
-                    layoutItems.add(currentObjectToPlace.createCopyAtPosition(e.getPoint()));
+                if (currentObjectToPlace != null && !(currentObjectToPlace instanceof Wall)) {
+                    layoutItems.add(currentObjectToPlace.createObjectAtPosition(e.getPoint()));
                     canvasPanel.repaint();
                     currentObjectToPlace = null; // Reset the selected object after placing
+                    resetRightButtonColors();
                 }
 
             }
             @Override
             public void mousePressed(MouseEvent e) {
-                clickFlag = false;
-                selectionStartPoint = e.getPoint();
-                selectionEndPoint = selectionStartPoint;
-                selectionBox = new Rectangle(selectionStartPoint.x, selectionStartPoint.y, 0, 0);
-                canvasPanel.repaint();
+                if (currentObjectToPlace != null && currentObjectToPlace instanceof Wall){
+                    layoutItems.add(currentObjectToPlace.createObjectAtPosition(e.getPoint()));
+                }
+                else {
+                    selectionStartPoint = e.getPoint();
+                    selectionEndPoint = selectionStartPoint;
+                    selectionBox = new Rectangle(selectionStartPoint.x, selectionStartPoint.y, 0, 0);
+                    canvasPanel.repaint();
+                }
             }
             @Override
             public void mouseReleased(MouseEvent e) {
-                selectObjects();
-                if (!selectedItems.isEmpty()) {
-                    displaySelectMenu(canvasPanel, e);
+                if (currentObjectToPlace != null && currentObjectToPlace instanceof Wall) {
+                    currentObjectToPlace = null;
+                    resetRightButtonColors();
+                }
+                else {
+                    selectObjects();
+                    if (!selectedItems.isEmpty()) {
+                        displaySelectMenu(canvasPanel, e);
+                    }
                 }
             }
         });
@@ -145,13 +155,20 @@ public class App extends JFrame {
         canvasPanel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                selectionEndPoint = e.getPoint();
-                int x = Math.min(selectionStartPoint.x, selectionEndPoint.x);
-                int y = Math.min(selectionStartPoint.y, selectionEndPoint.y);
-                int width = Math.abs(selectionStartPoint.x - selectionEndPoint.x);
-                int height = Math.abs(selectionStartPoint.y - selectionEndPoint.y);
-                selectionBox.setBounds(x, y, width, height);
-                canvasPanel.repaint();
+                if (currentObjectToPlace != null && currentObjectToPlace instanceof Wall){
+                    Wall newWall = (Wall) layoutItems.getLast();
+                    newWall.updateWallEndpoint(e.getPoint(), canvasPanel);
+                    canvasPanel.repaint();
+                }
+                else {
+                    selectionEndPoint = e.getPoint();
+                    int x = Math.min(selectionStartPoint.x, selectionEndPoint.x);
+                    int y = Math.min(selectionStartPoint.y, selectionEndPoint.y);
+                    int width = Math.abs(selectionStartPoint.x - selectionEndPoint.x);
+                    int height = Math.abs(selectionStartPoint.y - selectionEndPoint.y);
+                    selectionBox.setBounds(x, y, width, height);
+                    canvasPanel.repaint();
+                }
             }
         });
 
@@ -167,7 +184,6 @@ public class App extends JFrame {
         for (FurnitureObject item : layoutItems) {
             Rectangle objBounds = item.getBoundingBox();
             if (objBounds != null && selectionBox.intersects(objBounds)) {
-                // Mark obj as selected (you can store selected objects in a separate list or mark them somehow)
                 System.out.println("Object selected: " + item.getName());
                 selectedItems.add(item);
             }
@@ -209,7 +225,15 @@ public class App extends JFrame {
         selectMenu.add(rotateSubMenu);
 
         // -------------------------------------- IMPLEMENT MOVE ---------------------------
-        moveItem.addActionListener(e -> MoveUtility.moveSelectedItemsOnPanel(selectedItems, canvasPanel));
+        moveItem.addActionListener(e -> {
+            MoveUtility.moveSelectedItemsOnPanel(selectedItems, canvasPanel);
+            for (FurnitureObject item: selectedItems) {
+                if (!(item instanceof Movable)) {
+                    setMessage("Some of the selected items are not Movable");
+                    break;
+                }
+            }
+        });
 
         // ---------------- END MOVE IMPLEMENTATION
         deleteItem.addActionListener(e -> {
@@ -226,6 +250,9 @@ public class App extends JFrame {
                 if (item instanceof Resizable resizeItem) {
                     resizeItem.setSmall();
                 }
+                else {
+                    setMessage("Some of the selected items are not Resizable");
+                }
             }
             repaint();
             selectedItems.clear();
@@ -237,6 +264,9 @@ public class App extends JFrame {
             for (FurnitureObject item : selectedItems) {
                 if (item instanceof Resizable resizeItem) {
                     resizeItem.setMedium();
+                }
+                else {
+                    setMessage("Some of the selected items are not Resizable");
                 }
             }
             repaint();
@@ -250,6 +280,9 @@ public class App extends JFrame {
                 if (item instanceof Resizable resizeItem) {
                     resizeItem.setLarge();
                 }
+                else {
+                    setMessage("Some of the selected items are not Resizable");
+                }
             }
             repaint();
             selectedItems.clear();
@@ -261,6 +294,9 @@ public class App extends JFrame {
             for (FurnitureObject item : selectedItems) {
                 if (item instanceof Rotatable rotateItem) {
                     rotateItem.rotate90degrees();
+                }
+                else {
+                    setMessage("Some of the selected items are not Rotatable");
                 }
             }
             repaint();
@@ -274,6 +310,9 @@ public class App extends JFrame {
                 if (item instanceof Rotatable rotateItem) {
                     rotateItem.rotate180degrees();
                 }
+                else {
+                    setMessage("Some of the selected items are not Rotatable");
+                }
             }
             repaint();
             selectedItems.clear();
@@ -286,47 +325,35 @@ public class App extends JFrame {
                 if (item instanceof Rotatable rotateItem) {
                     rotateItem.rotate270degrees();
                 }
+                else {
+                    setMessage("Some of the selected items are not Rotatable");
+                }
             }
             repaint();
             selectedItems.clear();
 
         });
-
         // Display the popup menu
         selectMenu.show(SwingUtilities.getRoot(canvasPanel), event.getX(), event.getY());
     }
 
-    /**
-     * Initializes drawing settings for the canvas.
-     */
     private void initDrawing() {
         Graphics2D g2d = canvas.createGraphics();
         g2d.setColor(Color.BLACK);
         g2d.setStroke(new BasicStroke(2));
     }
 
-    /**
-     * Draws a line between two points.
-     *
-     * @param start The starting point of the line.
-     * @param end The ending point of the line.
-     */
-    private void drawLine(Point start, Point end) {
-        Graphics2D g2d = canvas.createGraphics();
-        g2d.setColor(Color.BLACK);
-        g2d.drawLine(start.x, start.y, end.x, end.y);
-        g2d.dispose();
-    }
-
-    /**
-     * Clears the canvas.
-     */
     private void clearCanvas() {
-        Graphics2D g2d = canvas.createGraphics();
-        g2d.setComposite(AlphaComposite.Clear);
-        g2d.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        g2d.setComposite(AlphaComposite.SrcOver);
-        g2d.dispose();
+        if (layoutItems != null) {
+            layoutItems.clear();
+        }
+        else {
+            Graphics2D g2d = canvas.createGraphics();
+            g2d.setComposite(AlphaComposite.Clear);
+            g2d.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            g2d.setComposite(AlphaComposite.SrcOver);
+            g2d.dispose();
+        }
         repaint();
     }
 
@@ -412,15 +439,15 @@ public class App extends JFrame {
         setJMenuBar(menuBar);
     }
 
-    private void addAddItemButton() {
+    private void addLeftPanel() {
+        messageField = new JTextField();
+        messageField.setEditable(false); // Make the text field read-only
+        messageField.setPreferredSize(new Dimension(200, 30));
+
+        JButton clearCanvasButton = new JButton("Clear");
+        clearCanvasButton.addActionListener(e -> clearCanvas());
+
         JButton addItemButton = new JButton("Add Item"); // Create a new button with text "Add Item"
-        /**
-        addItemButton.addActionListener(new ActionListener() { // Add an action listener to handle button clicks
-            public void actionPerformed(ActionEvent e) {
-                clearCanvas();  //displayRoomMenu();
-            }
-        });
-       */
         addItemButton.addActionListener(e -> {
             JPopupMenu addItemMenu = new JPopupMenu();
             JMenuItem essentialsItem = new JMenuItem("Essentials");
@@ -430,7 +457,7 @@ public class App extends JFrame {
             JMenuItem livingRoomOfficeItem = new JMenuItem("Living Room/Office");
 
             essentialsItem.addActionListener(actionEvent -> {
-                populateRightPanel(getEssentialsItems());
+                addRightPanel(getEssentialsItems());
             });
 /*
             kitchenItem.addActionListener(actionEvent -> {
@@ -457,50 +484,51 @@ public class App extends JFrame {
 
             addItemMenu.show(addItemButton, 0, addItemButton.getHeight());
         });
-        JPanel buttonPanel = new JPanel(); // Create a panel to hold the button
-        buttonPanel.add(addItemButton); // Add the button to the panel
-
-        add(buttonPanel, BorderLayout.WEST);
-
+        JPanel leftPanel = new JPanel(); // Create a panel to hold the button
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.X_AXIS));
+        leftPanel.add(clearCanvasButton);
+        leftPanel.add(Box.createHorizontalStrut(20));
+        leftPanel.add(addItemButton);
+        leftPanel.add(Box.createHorizontalStrut(20));
+        leftPanel.add(messageField);
+        add(leftPanel, BorderLayout.NORTH);
     }
-    private void populateRightPanel(ArrayList<FurnitureObject> items) {
+    private void setMessage(String message) {
+        messageField.setText(message);
+    }
+    private void initRightPanel() {
+        rightPanel = new JPanel();
+        rightPanel.setLayout(new GridLayout(0, 1));
+        add(rightPanel, BorderLayout.EAST);
+    }
+    private void addRightPanel(ArrayList<FurnitureObject> items) {
         rightPanel.removeAll();
         for (FurnitureObject item : items) {
             JButton itemButton = new JButton();
             itemButton.setLayout(new BorderLayout());
-            itemButton.add(new JLabel(new ImageIcon(createImageForFurnitureObject(item))), BorderLayout.CENTER);
+            itemButton.add(new JLabel(new ImageIcon(createImageForItemMenu(item))), BorderLayout.CENTER);
             itemButton.add(new JLabel(item.getName(), SwingConstants.CENTER), BorderLayout.SOUTH);
             itemButton.addActionListener(e -> {
                 currentObjectToPlace = item;
-                // selectedItems.add(item);
-                for (JButton obj : objects) {
-                    obj.setBackground(null);
-                }
-                itemButton.setBackground(Color.YELLOW);
-
+                resetRightButtonColors(); // Reset all button colors
+                itemButton.setBackground(Color.YELLOW); // Highlight the clicked button
             });
-            objects.add(itemButton);
+            rightButtons.add(itemButton);
             rightPanel.add(itemButton);
         }
-            /*
-            JButton button = new JButton(item.getName());
-            button.addActionListener(e -> {
-                selectedItems.add(item);
-                for (JButton obj : objects) {
-                    obj.setBackground(null);
-                }
-                button.setBackground(Color.YELLOW);
-            });
-            objects.add(button);
-            rightPanel.add(button);
-        }
-
-             */
         revalidate();
         repaint();
     }
 
-    private Image createImageForFurnitureObject(FurnitureObject object) {  // -----------------------------------
+    // Add this method to reset all buttons' background colors
+    private void resetRightButtonColors() {
+        for (JButton but : rightButtons) {
+            but.setBackground(null); // Reset background color of all buttons
+        }
+    }
+
+
+    private Image createImageForItemMenu(FurnitureObject object) {  // -----------------------------------
         Image image = new BufferedImage(50, 50, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = (Graphics2D) image.getGraphics();
         object.draw(g2d);
