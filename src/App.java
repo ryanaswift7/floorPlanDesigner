@@ -1,11 +1,7 @@
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.awt.event.MouseAdapter;
@@ -14,6 +10,7 @@ import java.awt.event.MouseEvent;
 import FurnitureObjects.Essentials.*;
 import Interfaces.*;
 import Utils.ComplimentGenerator;
+import Utils.FileHandler;
 import Utils.MoveUtility;
 
 
@@ -35,6 +32,7 @@ public class App extends JFrame {
     private Point selectionStartPoint;
     private Point selectionEndPoint;
     private static JTextField messageField;
+    private JPanel canvasPanel;
 
     /**
      * Constructor to initialize the application.
@@ -62,7 +60,7 @@ public class App extends JFrame {
         canvas = new BufferedImage(800, 600, BufferedImage.TYPE_INT_ARGB);
         clearCanvas();
 
-        JPanel canvasPanel = new JPanel() {
+        canvasPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -368,34 +366,15 @@ public class App extends JFrame {
     /**
      * Saves the current drawing to a file.
      */
-    private void saveImage() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Save Image");
-        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile();
-            try {
-                ImageIO.write(canvas, "PNG", file);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
+    private void saveFloorplan() {
+        setMessage(FileHandler.saveToFileWithPreview(null, layoutItems, canvasPanel));
     }
 
     /**
      * Loads an image from a file into the canvas.
      */
-    private void loadImage() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Open Image");
-        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile();
-            try {
-                canvas = ImageIO.read(file);
-                repaint();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
+    private void loadFloorplan() {
+        setMessage(FileHandler.loadFromFileWithPreview(null, layoutItems, canvasPanel));
     }
 
     /**
@@ -417,11 +396,11 @@ public class App extends JFrame {
         // File Menu
         JMenu fileMenu = new JMenu("File");
         JMenuItem saveItem = new JMenuItem("Save");
-        saveItem.addActionListener(e -> saveImage());
+        saveItem.addActionListener(e -> saveFloorplan());
         fileMenu.add(saveItem);
 
         JMenuItem loadItem = new JMenuItem("Load");
-        loadItem.addActionListener(e -> loadImage());
+        loadItem.addActionListener(e -> loadFloorplan());
         fileMenu.add(loadItem);
 
         fileMenu.add(new JSeparator()); // Separator
@@ -547,7 +526,7 @@ public class App extends JFrame {
     }
 
     private ArrayList<FurnitureObject> getEssentialsItems() {
-        return new ArrayList<>(Arrays.asList(new Door(), new FurnitureObjects.Essentials.Window(), new Wall(), new Rug(), new Mirror(), new Lamp()));
+        return new ArrayList<>(Arrays.asList(new Door(), new Wall())); //, new FurnitureObjects.Essentials.Window(), new Rug(), new Mirror(), new Lamp()));
     }
 
     private ArrayList<String> getKitchenItems() {

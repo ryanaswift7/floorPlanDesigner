@@ -3,8 +3,10 @@ package FurnitureObjects.Essentials;
 import Interfaces.FurnitureObject;
 import Interfaces.Movable;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.io.*;
 
 public class Wall implements FurnitureObject, Movable {
     private int x1, y1, x2, y2, deltaX, deltaY;
@@ -22,8 +24,7 @@ public class Wall implements FurnitureObject, Movable {
         this.x2 = 25;
         this.y2 = 50;
     }
-
-
+    public void loadImage() { return;}
     @Override
     public String getName() {
         return name;
@@ -91,5 +92,16 @@ public class Wall implements FurnitureObject, Movable {
         y1 = newPosition.y;
         x2 = x1 + deltaX;
         y2 = y1 + deltaY;
+    }
+    @Override
+    public void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject(); // Write other fields
+        out.writeInt(0); // Indicate that no image is available
+    }
+
+    @Override
+    // Custom deserialization logic for transient field doorImage
+    public void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject(); // Read other fields
     }
 }

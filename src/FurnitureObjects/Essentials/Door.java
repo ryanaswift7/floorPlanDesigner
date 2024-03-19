@@ -10,15 +10,14 @@ import Utils.PathConverter;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
 public class Door implements FurnitureObject, Movable, Rotatable, Resizable {
     private int x, y, size;
     private static final String imagePath =
             PathConverter.convertPathBasedOnOS("FurnitureObjects/Essentials/door.png");
     private static final String name = "Door";
-    private BufferedImage doorImage;
+    private transient BufferedImage doorImage;
 
 
     public Door(int x, int y, int size) {
@@ -34,7 +33,7 @@ public class Door implements FurnitureObject, Movable, Rotatable, Resizable {
         this.size = 50;
         loadImage();
     }
-    private void loadImage() {
+    public void loadImage() {
         try {
             doorImage = ImageIO.read(new File(imagePath));
         } catch (IOException e) {
@@ -103,5 +102,38 @@ public class Door implements FurnitureObject, Movable, Rotatable, Resizable {
     @Override
     public void setLarge() {
         size = 80;
+    }
+
+
+    @Override
+    // Custom serialization method
+    public void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject(); // Write other fields
+        if (doorImage != null) {
+            // Convert BufferedImage to byte array
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(doorImage, "png", baos);
+            byte[] imageBytes = baos.toByteArray();
+            out.writeInt(imageBytes.length);
+            out.write(imageBytes); // Write image data to the stream
+        } else {
+            out.writeInt(0); // Indicate that no image is available
+        }
+    }
+
+    @Override
+    // Custom deserialization method
+    public void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject(); // Read other fields
+        int imageLength = in.readInt();
+        if (imageLength > 0) {
+            byte[] imageBytes = new byte[imageLength];
+            in.readFully(imageBytes); // Read image data from the stream
+            try (ByteArrayInputStream bais = new ByteArrayInputStream(imageBytes)) {
+                doorImage = ImageIO.read(bais); // Convert byte array back to BufferedImage
+            }
+        } else {
+            doorImage = null; // No image available
+        }
     }
 }

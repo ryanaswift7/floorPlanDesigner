@@ -5,7 +5,7 @@ import Interfaces.FurnitureObject;
 import java.awt.*;
 import java.awt.geom.*;
 
-public class Window implements FurnitureObject {
+public abstract class Window implements FurnitureObject {
     private int x1, y1, x2, y2;
     private String name;
 

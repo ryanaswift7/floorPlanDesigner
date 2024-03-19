@@ -5,7 +5,7 @@ import Interfaces.FurnitureObject;
 import java.awt.*;
 import java.awt.geom.*;
 
-public class Rug implements FurnitureObject {
+public abstract class Rug implements FurnitureObject {
     private int x, y;
     private String name;
     private int rectWidth, rectHeight;

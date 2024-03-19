@@ -5,7 +5,7 @@ import Interfaces.FurnitureObject;
 import java.awt.*;
 import java.awt.geom.*;
 
-public class Lamp implements FurnitureObject {
+public abstract class Lamp implements FurnitureObject {
     private int x, y;
     private String name;
     private int circleRadius;
@@ -43,7 +43,7 @@ public class Lamp implements FurnitureObject {
 
     @Override
     public FurnitureObject createObjectAtPosition(Point position) {
-        return new Lamp(position.x, position.y);
+        return null; //new Lamp(position.x, position.y);
     }
 
     @Override

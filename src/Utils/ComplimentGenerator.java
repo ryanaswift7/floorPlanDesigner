@@ -48,8 +48,8 @@ public class ComplimentGenerator {
             scheduler.scheduleAtFixedRate(() -> {
                 String compliment = getRandomCompliment();
                 SwingUtilities.invokeLater(() -> textField.setText(compliment));
-            }, 0, 15, TimeUnit.SECONDS);
-        }, 20, TimeUnit.SECONDS);
+            }, 0, 30, TimeUnit.SECONDS);
+        }, 30, TimeUnit.SECONDS);
     }
 
     private String getRandomCompliment() {
