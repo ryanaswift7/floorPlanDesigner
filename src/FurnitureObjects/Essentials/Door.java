@@ -5,6 +5,7 @@ import Interfaces.Movable;
 import Interfaces.Resizable;
 import Interfaces.Rotatable;
 import Utils.ImageManipulator;
+import Utils.PathConverter;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -13,23 +14,24 @@ import java.io.File;
 import java.io.IOException;
 
 public class Door implements FurnitureObject, Movable, Rotatable, Resizable {
-    private int x, y, width;
-    private static final String imagePath = "FurnitureObjects/Essentials/door.png";
+    private int x, y, size;
+    private static final String imagePath =
+            PathConverter.convertPathBasedOnOS("FurnitureObjects/Essentials/door.png");
     private static final String name = "Door";
     private BufferedImage doorImage;
 
 
-    public Door(int x, int y, int width) {
+    public Door(int x, int y, int size) {
         this.x = x;
         this.y = y;
-        this.width = width;
+        this.size = size;
         loadImage();
     }
     // empty constructor used for creating rightPanel boxes
     public Door() {
         this.x = 0;
         this.y = 0;
-        this.width = 50;
+        this.size = 50;
         loadImage();
     }
     private void loadImage() {
@@ -42,12 +44,12 @@ public class Door implements FurnitureObject, Movable, Rotatable, Resizable {
     @Override
     public void draw(Graphics2D g) {
         if (doorImage != null) {
-            BufferedImage resizedDoorImage = ImageManipulator.resizeImage(doorImage, width, width);
+            BufferedImage resizedDoorImage = ImageManipulator.resizeImage(doorImage, size, size);
             g.drawImage(resizedDoorImage, x, y, null);
         } else {
             // If image loading failed, draw a placeholder rectangle
             g.setColor(Color.RED);
-            g.fillRect(x, y, width, width);
+            g.fillRect(x, y, size, size);
         }
     }
 
@@ -56,7 +58,7 @@ public class Door implements FurnitureObject, Movable, Rotatable, Resizable {
         return new Door(position.x, position.y, 50);
     }
     public Rectangle getBoundingBox() {
-        return new Rectangle(x, y, width, width);
+        return new Rectangle(x, y, size, size);
     }
 
     @Override
@@ -90,16 +92,16 @@ public class Door implements FurnitureObject, Movable, Rotatable, Resizable {
 
     @Override
     public void setSmall() {
-        width = 30;
+        size = 30;
     }
 
     @Override
     public void setMedium() {
-        width = 50;
+        size = 50;
     }
 
     @Override
     public void setLarge() {
-        width = 80;
+        size = 80;
     }
 }

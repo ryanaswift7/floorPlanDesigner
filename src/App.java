@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 
 import FurnitureObjects.Essentials.*;
 import Interfaces.*;
+import Utils.ComplimentGenerator;
 import Utils.MoveUtility;
 
 
@@ -33,7 +34,7 @@ public class App extends JFrame {
     private Rectangle selectionBox;
     private Point selectionStartPoint;
     private Point selectionEndPoint;
-    private JTextField messageField;
+    private static JTextField messageField;
 
     /**
      * Constructor to initialize the application.
@@ -44,16 +45,18 @@ public class App extends JFrame {
         initDrawing();
         addLeftPanel();
         initRightPanel();
-        setMessage("Welcome to the Interactive Floor Plan Designer!");
+        initFields();
+    }
+
+    private void initFields() {
+        // Create an instance of ComplimentGenerator and start generating compliments
+        ComplimentGenerator generator = new ComplimentGenerator(messageField);
+        generator.startGeneratingCompliments();
 
         layoutItems = new ArrayList<>();
         selectedItems = new ArrayList<>();
         rightButtons = new ArrayList<>();
     }
-
-    /**
-     * Initializes the User Interface components of the application.
-     */
 
     private void initUI() {
         canvas = new BufferedImage(800, 600, BufferedImage.TYPE_INT_ARGB);
@@ -102,11 +105,7 @@ public class App extends JFrame {
                     g2d.drawLine(0, y, canvas.getWidth(), y);
                 }
                 g2d.dispose();
-
             }
-
-
-
         };
 
         canvasPanel.addMouseListener(new MouseAdapter() {
@@ -128,6 +127,7 @@ public class App extends JFrame {
                     layoutItems.add(currentObjectToPlace.createObjectAtPosition(e.getPoint()));
                 }
                 else {
+                    selectedItems.clear();
                     selectionStartPoint = e.getPoint();
                     selectionEndPoint = selectionStartPoint;
                     selectionBox = new Rectangle(selectionStartPoint.x, selectionStartPoint.y, 0, 0);
@@ -151,6 +151,14 @@ public class App extends JFrame {
 
         canvasPanel.setPreferredSize(new Dimension(800, 600));
 
+        // Add a component listener to the canvas panel to handle resizing
+        canvasPanel.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                super.componentResized(e);
+                resizeCanvas(canvasPanel);
+            }
+        });
 
         canvasPanel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
@@ -180,7 +188,7 @@ public class App extends JFrame {
 
 
     }
-    public void selectObjects() {
+    private void selectObjects() {
         for (FurnitureObject item : layoutItems) {
             Rectangle objBounds = item.getBoundingBox();
             if (objBounds != null && selectionBox.intersects(objBounds)) {
@@ -192,7 +200,7 @@ public class App extends JFrame {
         repaint();
     }
 
-    public void displaySelectMenu(JPanel canvasPanel, MouseEvent event) {
+    private void displaySelectMenu(JPanel canvasPanel, MouseEvent event) {
         JPopupMenu selectMenu = new JPopupMenu();
 
         // Menu options
@@ -224,7 +232,6 @@ public class App extends JFrame {
         selectMenu.add(resizeSubMenu);
         selectMenu.add(rotateSubMenu);
 
-        // -------------------------------------- IMPLEMENT MOVE ---------------------------
         moveItem.addActionListener(e -> {
             MoveUtility.moveSelectedItemsOnPanel(selectedItems, canvasPanel);
             for (FurnitureObject item: selectedItems) {
@@ -235,7 +242,6 @@ public class App extends JFrame {
             }
         });
 
-        // ---------------- END MOVE IMPLEMENTATION
         deleteItem.addActionListener(e -> {
             for (FurnitureObject item : selectedItems) {
                 layoutItems.remove(item);
@@ -396,7 +402,10 @@ public class App extends JFrame {
      * Shows an About dialog with information about the application.
      */
     private void showAbout() {
-        JOptionPane.showMessageDialog(this, "Simple Paint Application\nVersion 1.0\nCreated by ChatGPT", "About", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this,
+                "Interactive Floor Plan Designer\n" +
+                        "Version 1.0\n" +
+                        "Icons from Flaticon", "About", JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**
@@ -442,12 +451,12 @@ public class App extends JFrame {
     private void addLeftPanel() {
         messageField = new JTextField();
         messageField.setEditable(false); // Make the text field read-only
-        messageField.setPreferredSize(new Dimension(200, 30));
+        messageField.setPreferredSize(new Dimension(200, 20));
 
         JButton clearCanvasButton = new JButton("Clear");
         clearCanvasButton.addActionListener(e -> clearCanvas());
 
-        JButton addItemButton = new JButton("Add Item"); // Create a new button with text "Add Item"
+        JButton addItemButton = new JButton("Add Item");
         addItemButton.addActionListener(e -> {
             JPopupMenu addItemMenu = new JPopupMenu();
             JMenuItem essentialsItem = new JMenuItem("Essentials");
@@ -486,6 +495,7 @@ public class App extends JFrame {
         });
         JPanel leftPanel = new JPanel(); // Create a panel to hold the button
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.X_AXIS));
+        leftPanel.add(Box.createHorizontalStrut(10));
         leftPanel.add(clearCanvasButton);
         leftPanel.add(Box.createHorizontalStrut(20));
         leftPanel.add(addItemButton);
@@ -493,7 +503,7 @@ public class App extends JFrame {
         leftPanel.add(messageField);
         add(leftPanel, BorderLayout.NORTH);
     }
-    private void setMessage(String message) {
+    private static void setMessage(String message) {
         messageField.setText(message);
     }
     private void initRightPanel() {
@@ -556,7 +566,9 @@ public class App extends JFrame {
         return new ArrayList<>(Arrays.asList("Desk", "TV", "TV Stand", "Chair", "Couch", "Coffee Table"));
     }
 
-    private void resizeCanvas(int width, int height) {
+    private void resizeCanvas(JPanel canvasPanel) {
+        int width = canvasPanel.getWidth();
+        int height = canvasPanel.getHeight();
         BufferedImage newCanvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = newCanvas.createGraphics();
         g2d.drawImage(canvas, 0, 0, width, height, null);
