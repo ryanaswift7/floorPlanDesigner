@@ -11,22 +11,22 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
-public class Lamp implements FurnitureObject, Movable, Rotatable, Resizable {
+public class Candelabrum implements FurnitureObject, Movable, Rotatable, Resizable {
     private int x, y, size;
     private static final String imagePath =
-            PathConverter.convertPathBasedOnOS("resources/008-lamp.png");
-    private static final String name = "Lamp";
+            PathConverter.convertPathBasedOnOS("resources/007-candelabrum.png");
+    private static final String name = "Candelabrum";
     private transient BufferedImage image;
 
 
-    public Lamp(int x, int y) {
+    public Candelabrum(int x, int y) {
         this.x = x;
         this.y = y;
         setMedium();
         loadImage();
     }
     // empty constructor used for creating rightPanel boxes
-    public Lamp() {
+    public Candelabrum() {
         this.x = 0;
         this.y = 0;
         this.size = 50;  // image in menu is 50x50
@@ -53,7 +53,7 @@ public class Lamp implements FurnitureObject, Movable, Rotatable, Resizable {
 
     public String getName(){return name;}
     public FurnitureObject createObjectAtPosition(Point position) {
-        return new Lamp(position.x, position.y);
+        return new Candelabrum(position.x, position.y);
     }
     public Rectangle getBoundingBox() {
         return new Rectangle(x, y, size, size);

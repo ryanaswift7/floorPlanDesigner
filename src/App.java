@@ -14,12 +14,6 @@ import Utils.FileHandler;
 import Utils.MoveUtility;
 
 
-/**
- * Simple Paint Application using Java Swing.
- * Allows users to draw, save, load, and clear drawings.
- *
- * @author ChatGPT
- */
 public class App extends JFrame {
 
     private BufferedImage canvas;
@@ -34,9 +28,7 @@ public class App extends JFrame {
     private static JTextField messageField;
     private JPanel canvasPanel;
 
-    /**
-     * Constructor to initialize the application.
-     */
+
     public App() {
         super("Interactive Floor Plan Designer");
         initUI();
@@ -111,7 +103,7 @@ public class App extends JFrame {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 // If there is a selected object, place it on the canvas at the clicked position
-                if (currentObjectToPlace != null && !(currentObjectToPlace instanceof Wall)) {
+                if (currentObjectToPlace != null && !(currentObjectToPlace instanceof BoundaryLineObject)) {
                     layoutItems.add(currentObjectToPlace.createObjectAtPosition(e.getPoint()));
                     canvasPanel.repaint();
                     currentObjectToPlace = null; // Reset the selected object after placing
@@ -121,7 +113,7 @@ public class App extends JFrame {
             }
             @Override
             public void mousePressed(MouseEvent e) {
-                if (currentObjectToPlace != null && currentObjectToPlace instanceof Wall){
+                if (currentObjectToPlace != null && currentObjectToPlace instanceof BoundaryLineObject){
                     layoutItems.add(currentObjectToPlace.createObjectAtPosition(e.getPoint()));
                 }
                 else {
@@ -134,7 +126,7 @@ public class App extends JFrame {
             }
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (currentObjectToPlace != null && currentObjectToPlace instanceof Wall) {
+                if (currentObjectToPlace != null && currentObjectToPlace instanceof BoundaryLineObject) {
                     currentObjectToPlace = null;
                     resetRightButtonColors();
                 }
@@ -161,9 +153,9 @@ public class App extends JFrame {
         canvasPanel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (currentObjectToPlace != null && currentObjectToPlace instanceof Wall){
-                    Wall newWall = (Wall) layoutItems.getLast();
-                    newWall.updateWallEndpoint(e.getPoint(), canvasPanel);
+                if (currentObjectToPlace != null && currentObjectToPlace instanceof BoundaryLineObject){
+                    BoundaryLineObject newBLO = (BoundaryLineObject) layoutItems.getLast();
+                    newBLO.updateEndpoint(e.getPoint());
                     canvasPanel.repaint();
                 }
                 else {
@@ -361,25 +353,14 @@ public class App extends JFrame {
         repaint();
     }
 
-
-
-    /**
-     * Saves the current drawing to a file.
-     */
     private void saveFloorplan() {
         setMessage(FileHandler.saveToFileWithPreview(null, layoutItems, canvasPanel));
     }
 
-    /**
-     * Loads an image from a file into the canvas.
-     */
     private void loadFloorplan() {
         setMessage(FileHandler.loadFromFileWithPreview(null, layoutItems, canvasPanel));
     }
 
-    /**
-     * Shows an About dialog with information about the application.
-     */
     private void showAbout() {
         JOptionPane.showMessageDialog(this,
                 "Interactive Floor Plan Designer\n" +
@@ -387,9 +368,6 @@ public class App extends JFrame {
                         "Icons from Flaticon", "About", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    /**
-     * Sets up the menu bar with File, Edit, and Help menus.
-     */
     private void setupMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
@@ -409,12 +387,6 @@ public class App extends JFrame {
         exitItem.addActionListener(e -> System.exit(0));
         fileMenu.add(exitItem);
 
-        // Edit Menu
-        JMenu editMenu = new JMenu("Edit");
-        JMenuItem clearItem = new JMenuItem("Clear");
-        clearItem.addActionListener(e -> clearCanvas());
-        editMenu.add(clearItem);
-
         // Help Menu
         JMenu helpMenu = new JMenu("Help");
         JMenuItem aboutItem = new JMenuItem("About");
@@ -422,7 +394,6 @@ public class App extends JFrame {
         helpMenu.add(aboutItem);
 
         menuBar.add(fileMenu);
-        menuBar.add(editMenu);
         menuBar.add(helpMenu);
         setJMenuBar(menuBar);
     }
@@ -442,7 +413,11 @@ public class App extends JFrame {
             JMenuItem kitchenItem = new JMenuItem("Kitchen");
             JMenuItem bathroomItem = new JMenuItem("Bathroom");
             JMenuItem bedroomItem = new JMenuItem("Bedroom");
-            JMenuItem livingRoomOfficeItem = new JMenuItem("Living Room/Office");
+            JMenuItem seatingItem = new JMenuItem("Seating");
+            JMenuItem deskNtableItem = new JMenuItem("Desks & Tables");
+            JMenuItem rugItem = new JMenuItem("Rugs");
+            JMenuItem funItem = new JMenuItem("Fun!");
+
 
             essentialsItem.addActionListener(actionEvent -> {
                 addRightPanel(getEssentialsItems());
@@ -460,15 +435,30 @@ public class App extends JFrame {
                 populateRightPanel(getBedroomItems());
             });
 
-            livingRoomOfficeItem.addActionListener(actionEvent -> {
-                populateRightPanel(getLivingRoomOfficeItems());
+            seatingItem.addActionListener(actionEvent -> {
+                populateRightPanel(getSeatingItems());
+            });
+
+            deskNtableItem.addActionListener(actionEvent -> {
+                populateRightPanel(getDeskNTableItems());
+            });
+
+            rugItem.addActionListener(actionEvent -> {
+                populateRightPanel(getRugItems());
+            });
+
+            funItem.addActionListener(actionEvent -> {
+                populateRightPanel(getFunItems());
             });
 */
             addItemMenu.add(essentialsItem);
             addItemMenu.add(kitchenItem);
             addItemMenu.add(bathroomItem);
             addItemMenu.add(bedroomItem);
-            addItemMenu.add(livingRoomOfficeItem);
+            addItemMenu.add(seatingItem);
+            addItemMenu.add(deskNtableItem);
+            addItemMenu.add(rugItem);
+            addItemMenu.add(funItem);
 
             addItemMenu.show(addItemButton, 0, addItemButton.getHeight());
         });
@@ -517,7 +507,7 @@ public class App extends JFrame {
     }
 
 
-    private Image createImageForItemMenu(FurnitureObject object) {  // -----------------------------------
+    private Image createImageForItemMenu(FurnitureObject object) {
         Image image = new BufferedImage(50, 50, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = (Graphics2D) image.getGraphics();
         object.draw(g2d);
@@ -526,7 +516,10 @@ public class App extends JFrame {
     }
 
     private ArrayList<FurnitureObject> getEssentialsItems() {
-        return new ArrayList<>(Arrays.asList(new Door(), new Wall())); //, new FurnitureObjects.Essentials.Window(), new Rug(), new Mirror(), new Lamp()));
+        return new ArrayList<>(Arrays.asList(new Door(), new DoubleDoor(), new Wall(), new Mirror(),
+                                            new FurnitureObjects.Essentials.Window(),
+                                            new Chandelier(), new Lamp(), new Candelabrum(),
+                                            new Plant()));
     }
 
     private ArrayList<String> getKitchenItems() {
@@ -541,7 +534,16 @@ public class App extends JFrame {
         return new ArrayList<>(Arrays.asList("Bed", "Dresser", "Nightstand", "Chest", "Closet"));
     }
 
-    private ArrayList<String> getLivingRoomOfficeItems() {
+    private ArrayList<String> getSeatingItems() {
+        return new ArrayList<>(Arrays.asList("Desk", "TV", "TV Stand", "Chair", "Couch", "Coffee Table"));
+    }
+    private ArrayList<String> getDeskNTableItems() {
+        return new ArrayList<>(Arrays.asList("Desk", "TV", "TV Stand", "Chair", "Couch", "Coffee Table"));
+    }
+    private ArrayList<String> getRugItems() {
+        return new ArrayList<>(Arrays.asList("Desk", "TV", "TV Stand", "Chair", "Couch", "Coffee Table"));
+    }
+    private ArrayList<String> getFunItems() {
         return new ArrayList<>(Arrays.asList("Desk", "TV", "TV Stand", "Chair", "Couch", "Coffee Table"));
     }
 
@@ -556,12 +558,6 @@ public class App extends JFrame {
         repaint();
     }
 
-
-    /**
-     * Main method to run the application.
-     *
-     * @param args Command line arguments (not used).
-     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new App().setVisible(true));
     }

@@ -1,14 +1,13 @@
 package FurnitureObjects.Essentials;
 
+import Interfaces.BoundaryLineObject;
 import Interfaces.FurnitureObject;
 import Interfaces.Movable;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 
-public class Wall implements FurnitureObject, Movable {
+public class Wall implements BoundaryLineObject, Movable {
     private int x1, y1, x2, y2, deltaX, deltaY;
     private static final String name = "Wall";
 
@@ -58,10 +57,12 @@ public class Wall implements FurnitureObject, Movable {
     public FurnitureObject createObjectAtPosition(Point position) {
         return new Wall(position.x, position.y, position.x, position.y + 5);
     }
-    public void updateWallEndpoint(Point point, JPanel canvasPanel) {
+    @Override
+    public void updateEndpoint(Point point) {
         x2 = point.x;
         y2 = point.y;
     }
+    @Override
     public Rectangle getBoundingBox() {
         if (y1 == y2) {
             return new Rectangle(x1, y1-2, x2-x1, 4);
@@ -70,8 +71,8 @@ public class Wall implements FurnitureObject, Movable {
             return new Rectangle(x1-2, y1, 4, y2-y1);
         }
     }
-
-    private void snapToGrid() {
+    @Override
+    public void snapToGrid() {
         int gridSize = 20;
         x1 = (int) (Math.round(x1 / (double) gridSize) * gridSize);
         y1 = (int) (Math.round(y1 / (double) gridSize) * gridSize);
@@ -102,6 +103,6 @@ public class Wall implements FurnitureObject, Movable {
     @Override
     // Custom deserialization logic for transient field doorImage
     public void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject(); // Read other fields
+        in.defaultReadObject(); // Read other fields, ignore looking for image
     }
 }

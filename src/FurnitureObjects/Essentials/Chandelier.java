@@ -11,25 +11,25 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
-public class Lamp implements FurnitureObject, Movable, Rotatable, Resizable {
+public class Chandelier implements FurnitureObject, Movable, Rotatable, Resizable {
     private int x, y, size;
     private static final String imagePath =
-            PathConverter.convertPathBasedOnOS("resources/008-lamp.png");
-    private static final String name = "Lamp";
+            PathConverter.convertPathBasedOnOS("resources/009-chandelier.png");
+    private static final String name = "Chandelier";
     private transient BufferedImage image;
 
 
-    public Lamp(int x, int y) {
+    public Chandelier(int x, int y) {
         this.x = x;
         this.y = y;
         setMedium();
         loadImage();
     }
     // empty constructor used for creating rightPanel boxes
-    public Lamp() {
+    public Chandelier() {
         this.x = 0;
         this.y = 0;
-        this.size = 50;  // image in menu is 50x50
+        setMedium();
         loadImage();
     }
     public void loadImage() {
@@ -53,7 +53,7 @@ public class Lamp implements FurnitureObject, Movable, Rotatable, Resizable {
 
     public String getName(){return name;}
     public FurnitureObject createObjectAtPosition(Point position) {
-        return new Lamp(position.x, position.y);
+        return new Chandelier(position.x, position.y);
     }
     public Rectangle getBoundingBox() {
         return new Rectangle(x, y, size, size);
@@ -90,17 +90,17 @@ public class Lamp implements FurnitureObject, Movable, Rotatable, Resizable {
 
     @Override
     public void setSmall() {
-        size = 20;
-    }
-
-    @Override
-    public void setMedium() {
         size = 30;
     }
 
     @Override
-    public void setLarge() {
+    public void setMedium() {
         size = 40;
+    }
+
+    @Override
+    public void setLarge() {
+        size = 60;
     }
 
 

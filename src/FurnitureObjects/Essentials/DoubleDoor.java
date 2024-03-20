@@ -11,22 +11,22 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
-public class Lamp implements FurnitureObject, Movable, Rotatable, Resizable {
+public class DoubleDoor implements FurnitureObject, Movable, Rotatable, Resizable {
     private int x, y, size;
     private static final String imagePath =
-            PathConverter.convertPathBasedOnOS("resources/008-lamp.png");
-    private static final String name = "Lamp";
+            PathConverter.convertPathBasedOnOS("resources/006-doors.png");
+    private static final String name = "Double Door";
     private transient BufferedImage image;
 
 
-    public Lamp(int x, int y) {
+    public DoubleDoor(int x, int y) {
         this.x = x;
         this.y = y;
         setMedium();
         loadImage();
     }
     // empty constructor used for creating rightPanel boxes
-    public Lamp() {
+    public DoubleDoor() {
         this.x = 0;
         this.y = 0;
         this.size = 50;  // image in menu is 50x50
@@ -53,7 +53,7 @@ public class Lamp implements FurnitureObject, Movable, Rotatable, Resizable {
 
     public String getName(){return name;}
     public FurnitureObject createObjectAtPosition(Point position) {
-        return new Lamp(position.x, position.y);
+        return new DoubleDoor(position.x, position.y);
     }
     public Rectangle getBoundingBox() {
         return new Rectangle(x, y, size, size);
@@ -90,17 +90,17 @@ public class Lamp implements FurnitureObject, Movable, Rotatable, Resizable {
 
     @Override
     public void setSmall() {
-        size = 20;
+        size = 60;
     }
 
     @Override
     public void setMedium() {
-        size = 30;
+        size = 80;
     }
 
     @Override
     public void setLarge() {
-        size = 40;
+        size = 100;
     }
 
 

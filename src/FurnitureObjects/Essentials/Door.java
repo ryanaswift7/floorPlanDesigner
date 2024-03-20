@@ -1,4 +1,3 @@
-// Door.java
 package FurnitureObjects.Essentials;
 import Interfaces.FurnitureObject;
 import Interfaces.Movable;
@@ -15,35 +14,35 @@ import java.io.*;
 public class Door implements FurnitureObject, Movable, Rotatable, Resizable {
     private int x, y, size;
     private static final String imagePath =
-            PathConverter.convertPathBasedOnOS("FurnitureObjects/Essentials/door.png");
+            PathConverter.convertPathBasedOnOS("resources/door.png");
     private static final String name = "Door";
-    private transient BufferedImage doorImage;
+    private transient BufferedImage image;
 
 
-    public Door(int x, int y, int size) {
+    public Door(int x, int y) {
         this.x = x;
         this.y = y;
-        this.size = size;
+        setMedium();
         loadImage();
     }
     // empty constructor used for creating rightPanel boxes
     public Door() {
         this.x = 0;
         this.y = 0;
-        this.size = 50;
+        this.size = 50;  // image in menu is 50x50
         loadImage();
     }
     public void loadImage() {
         try {
-            doorImage = ImageIO.read(new File(imagePath));
+            image = ImageIO.read(new File(imagePath));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
     @Override
     public void draw(Graphics2D g) {
-        if (doorImage != null) {
-            BufferedImage resizedDoorImage = ImageManipulator.resizeImage(doorImage, size, size);
+        if (image != null) {
+            BufferedImage resizedDoorImage = ImageManipulator.resizeImage(image, size, size);
             g.drawImage(resizedDoorImage, x, y, null);
         } else {
             // If image loading failed, draw a placeholder rectangle
@@ -54,7 +53,7 @@ public class Door implements FurnitureObject, Movable, Rotatable, Resizable {
 
     public String getName(){return name;}
     public FurnitureObject createObjectAtPosition(Point position) {
-        return new Door(position.x, position.y, 50);
+        return new Door(position.x, position.y);
     }
     public Rectangle getBoundingBox() {
         return new Rectangle(x, y, size, size);
@@ -73,19 +72,19 @@ public class Door implements FurnitureObject, Movable, Rotatable, Resizable {
 
     @Override
     public void rotate90degrees() {
-        doorImage = ImageManipulator.rotateImage(doorImage, 90);
+        image = ImageManipulator.rotateImage(image, 90);
 
     }
 
     @Override
     public void rotate180degrees() {
-        doorImage = ImageManipulator.rotateImage(doorImage, 180);
+        image = ImageManipulator.rotateImage(image, 180);
 
     }
 
     @Override
     public void rotate270degrees() {
-        doorImage = ImageManipulator.rotateImage(doorImage, 270);
+        image = ImageManipulator.rotateImage(image, 270);
 
     }
 
@@ -109,10 +108,10 @@ public class Door implements FurnitureObject, Movable, Rotatable, Resizable {
     // Custom serialization method
     public void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject(); // Write other fields
-        if (doorImage != null) {
+        if (image != null) {
             // Convert BufferedImage to byte array
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(doorImage, "png", baos);
+            ImageIO.write(image, "png", baos);
             byte[] imageBytes = baos.toByteArray();
             out.writeInt(imageBytes.length);
             out.write(imageBytes); // Write image data to the stream
@@ -130,10 +129,10 @@ public class Door implements FurnitureObject, Movable, Rotatable, Resizable {
             byte[] imageBytes = new byte[imageLength];
             in.readFully(imageBytes); // Read image data from the stream
             try (ByteArrayInputStream bais = new ByteArrayInputStream(imageBytes)) {
-                doorImage = ImageIO.read(bais); // Convert byte array back to BufferedImage
+                image = ImageIO.read(bais); // Convert byte array back to BufferedImage
             }
         } else {
-            doorImage = null; // No image available
+            image = null; // No image available
         }
     }
 }
