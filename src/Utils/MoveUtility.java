@@ -1,7 +1,7 @@
 package Utils;
 
-import Interfaces.FurnitureObject;
-import Interfaces.Movable;
+import Templates.FurnitureObject;
+import Templates.Movable;
 
 import javax.swing.*;
 import java.awt.*;

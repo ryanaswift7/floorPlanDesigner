@@ -7,8 +7,22 @@ import java.util.Arrays;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import FurnitureObjects.Bathroom.Bath;
+import FurnitureObjects.Bathroom.Shower;
+import FurnitureObjects.Bathroom.Sink;
+import FurnitureObjects.Bathroom.Toilet;
+import FurnitureObjects.Bedroom.*;
+import FurnitureObjects.DesksNTables.*;
 import FurnitureObjects.Essentials.*;
-import Interfaces.*;
+import FurnitureObjects.Fun.*;
+import FurnitureObjects.Kitchen.BreakfastNook;
+import FurnitureObjects.Kitchen.LargeKitchen;
+import FurnitureObjects.Kitchen.Refrigerator;
+import FurnitureObjects.Kitchen.SmallKitchen;
+import FurnitureObjects.Rugs.CircleRug;
+import FurnitureObjects.Rugs.RectangleRug;
+import FurnitureObjects.Seating.*;
+import Templates.*;
 import Utils.ComplimentGenerator;
 import Utils.FileHandler;
 import Utils.MoveUtility;
@@ -422,35 +436,34 @@ public class App extends JFrame {
             essentialsItem.addActionListener(actionEvent -> {
                 addRightPanel(getEssentialsItems());
             });
-/*
+
             kitchenItem.addActionListener(actionEvent -> {
-                populateRightPanel(getKitchenItems());
+                addRightPanel(getKitchenItems());
             });
 
             bathroomItem.addActionListener(actionEvent -> {
-                populateRightPanel(getBathroomItems());
+                addRightPanel(getBathroomItems());
             });
-
             bedroomItem.addActionListener(actionEvent -> {
-                populateRightPanel(getBedroomItems());
+                addRightPanel(getBedroomItems());
             });
 
             seatingItem.addActionListener(actionEvent -> {
-                populateRightPanel(getSeatingItems());
+                addRightPanel(getSeatingItems());
             });
 
             deskNtableItem.addActionListener(actionEvent -> {
-                populateRightPanel(getDeskNTableItems());
+                addRightPanel(getDeskNTableItems());
             });
 
             rugItem.addActionListener(actionEvent -> {
-                populateRightPanel(getRugItems());
+                addRightPanel(getRugItems());
             });
 
             funItem.addActionListener(actionEvent -> {
-                populateRightPanel(getFunItems());
+                addRightPanel(getFunItems());
             });
-*/
+
             addItemMenu.add(essentialsItem);
             addItemMenu.add(kitchenItem);
             addItemMenu.add(bathroomItem);
@@ -522,29 +535,36 @@ public class App extends JFrame {
                                             new Plant()));
     }
 
-    private ArrayList<String> getKitchenItems() {
-        return new ArrayList<>(Arrays.asList("Sink", "Refrigerator", "Dishwasher", "Counterspace", "Cabinets", "Microwave", "Table", "Chair", "Stool"));
+    private ArrayList<FurnitureObject> getKitchenItems() {
+        return new ArrayList<>(Arrays.asList(new SmallKitchen(), new LargeKitchen(), new Refrigerator(),
+                                            new BreakfastNook()));
     }
 
-    private ArrayList<String> getBathroomItems() {
-        return new ArrayList<>(Arrays.asList("Sink", "Double Sink", "Toilet", "Bathtub", "Shower", "Combination Tub/Shower", "Floormat"));
+    private ArrayList<FurnitureObject> getBathroomItems() {
+        return new ArrayList<>(Arrays.asList(new Sink(), new Shower(), new Toilet(), new Bath()));
     }
 
-    private ArrayList<String> getBedroomItems() {
-        return new ArrayList<>(Arrays.asList("Bed", "Dresser", "Nightstand", "Chest", "Closet"));
+    private ArrayList<FurnitureObject> getBedroomItems() {
+        return new ArrayList<>(Arrays.asList(new LargeBed(), new KidsBed(), new RegularBed(),
+                                            new CircularBed(), new Wardrobe(), new Nightstand()));
     }
 
-    private ArrayList<String> getSeatingItems() {
-        return new ArrayList<>(Arrays.asList("Desk", "TV", "TV Stand", "Chair", "Couch", "Coffee Table"));
+    private ArrayList<FurnitureObject> getSeatingItems() {
+        return new ArrayList<>(Arrays.asList(new Sectional(), new GreenLoveseat(), new LSofa(),
+                                            new USofa(), new YellowLoveseat(), new StraightSofa(),
+                                            new SemicircularChair(), new Armchair()));
     }
-    private ArrayList<String> getDeskNTableItems() {
-        return new ArrayList<>(Arrays.asList("Desk", "TV", "TV Stand", "Chair", "Couch", "Coffee Table"));
+    private ArrayList<FurnitureObject> getDeskNTableItems() {
+        return new ArrayList<>(Arrays.asList(new LDesk(), new RegularDesk(),new CoffeeTable4Chairs(),
+                                            new CoffeeTable2Chairs(), new CoffeeTable(),
+                                            new SmallDiningTable(), new LargeDiningTable()));
     }
-    private ArrayList<String> getRugItems() {
-        return new ArrayList<>(Arrays.asList("Desk", "TV", "TV Stand", "Chair", "Couch", "Coffee Table"));
+    private ArrayList<FurnitureObject> getRugItems() {
+        return new ArrayList<>(Arrays.asList(new RectangleRug(), new CircleRug()));
     }
-    private ArrayList<String> getFunItems() {
-        return new ArrayList<>(Arrays.asList("Desk", "TV", "TV Stand", "Chair", "Couch", "Coffee Table"));
+    private ArrayList<FurnitureObject> getFunItems() {
+        return new ArrayList<>(Arrays.asList(new Car(), new Bookshelf(), new TV(),
+                                            new MakeupVanity(), new Synthesizer()));
     }
 
     private void resizeCanvas(JPanel canvasPanel) {

@@ -1,4 +1,4 @@
-package Interfaces;
+package Templates;
 
 public interface Resizable {
     public void setSmall();

@@ -1,4 +1,4 @@
-package FurnitureObjects.Essentials;
+package FurnitureObjects.Seating;
 
 import Templates.FurnitureObject;
 import Templates.IconObject;
@@ -6,19 +6,19 @@ import Utils.PathConverter;
 
 import java.awt.*;
 
-public class Door extends IconObject {
+public class Armchair extends IconObject {
     private static final String IMAGE_PATH =
-            PathConverter.convertPathBasedOnOS("resources/door.png");
-    private static final String NAME = "Door";
+            PathConverter.convertPathBasedOnOS("resources/012-armchair.png");
+    private static final String NAME = "Armchair";
 
-    public Door(int x, int y) {
+    public Armchair(int x, int y) {
         super(x, y);
         setImagePath(IMAGE_PATH);
         setName(NAME);
     }
 
     // empty constructor used for creating rightPanel boxes
-    public Door() {
+    public Armchair() {
         super();
         setImagePath(IMAGE_PATH);
         setName(NAME);
@@ -26,7 +26,7 @@ public class Door extends IconObject {
 
     @Override
     public FurnitureObject createObjectAtPosition(Point position) {
-        return new Door(position.x, position.y);
+        return new Armchair(position.x, position.y);
     }
 
     @Override
@@ -36,11 +36,11 @@ public class Door extends IconObject {
 
     @Override
     public void setMedium() {
-        setSize(40);
+        setSize(35);
     }
 
     @Override
     public void setLarge() {
-        setSize(50);
+        setSize(40);
     }
 }

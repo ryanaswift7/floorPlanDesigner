@@ -1,4 +1,4 @@
-package Interfaces;
+package Templates;
 
 import java.awt.*;
 

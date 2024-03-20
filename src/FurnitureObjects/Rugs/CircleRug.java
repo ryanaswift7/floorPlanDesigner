@@ -1,4 +1,4 @@
-package FurnitureObjects.Essentials;
+package FurnitureObjects.Rugs;
 
 import Templates.FurnitureObject;
 import Templates.IconObject;
@@ -6,19 +6,19 @@ import Utils.PathConverter;
 
 import java.awt.*;
 
-public class Door extends IconObject {
+public class CircleRug extends IconObject {
     private static final String IMAGE_PATH =
-            PathConverter.convertPathBasedOnOS("resources/door.png");
-    private static final String NAME = "Door";
+            PathConverter.convertPathBasedOnOS("resources/030-carpet-1.png");
+    private static final String NAME = "Circle Rug";
 
-    public Door(int x, int y) {
+    public CircleRug(int x, int y) {
         super(x, y);
         setImagePath(IMAGE_PATH);
         setName(NAME);
     }
 
     // empty constructor used for creating rightPanel boxes
-    public Door() {
+    public CircleRug() {
         super();
         setImagePath(IMAGE_PATH);
         setName(NAME);
@@ -26,21 +26,21 @@ public class Door extends IconObject {
 
     @Override
     public FurnitureObject createObjectAtPosition(Point position) {
-        return new Door(position.x, position.y);
+        return new CircleRug(position.x, position.y);
     }
 
     @Override
     public void setSmall() {
-        setSize(30);
-    }
-
-    @Override
-    public void setMedium() {
         setSize(40);
     }
 
     @Override
+    public void setMedium() {
+        setSize(60);
+    }
+
+    @Override
     public void setLarge() {
-        setSize(50);
+        setSize(80);
     }
 }

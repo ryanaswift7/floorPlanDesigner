@@ -1,11 +1,10 @@
 package FurnitureObjects.Essentials;
 
-import Interfaces.BoundaryLineObject;
-import Interfaces.FurnitureObject;
-import Interfaces.Movable;
+import Templates.BoundaryLineObject;
+import Templates.FurnitureObject;
+import Templates.Movable;
 
 import java.awt.*;
-import java.awt.geom.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;

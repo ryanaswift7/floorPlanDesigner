@@ -1,8 +1,8 @@
 package FurnitureObjects.Essentials;
 
-import Interfaces.BoundaryLineObject;
-import Interfaces.FurnitureObject;
-import Interfaces.Movable;
+import Templates.BoundaryLineObject;
+import Templates.FurnitureObject;
+import Templates.Movable;
 
 import java.awt.*;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package FurnitureObjects.Essentials;
+package FurnitureObjects.DesksNTables;
 
 import Templates.FurnitureObject;
 import Templates.IconObject;
@@ -6,19 +6,19 @@ import Utils.PathConverter;
 
 import java.awt.*;
 
-public class Door extends IconObject {
+public class CoffeeTable4Chairs extends IconObject {
     private static final String IMAGE_PATH =
-            PathConverter.convertPathBasedOnOS("resources/door.png");
-    private static final String NAME = "Door";
+            PathConverter.convertPathBasedOnOS("resources/006-coffee-table.png");
+    private static final String NAME = "Coffee Table (4 Chairs)";
 
-    public Door(int x, int y) {
+    public CoffeeTable4Chairs(int x, int y) {
         super(x, y);
         setImagePath(IMAGE_PATH);
         setName(NAME);
     }
 
     // empty constructor used for creating rightPanel boxes
-    public Door() {
+    public CoffeeTable4Chairs() {
         super();
         setImagePath(IMAGE_PATH);
         setName(NAME);
@@ -26,21 +26,21 @@ public class Door extends IconObject {
 
     @Override
     public FurnitureObject createObjectAtPosition(Point position) {
-        return new Door(position.x, position.y);
+        return new CoffeeTable4Chairs(position.x, position.y);
     }
 
     @Override
     public void setSmall() {
-        setSize(30);
+        setSize(70);
     }
 
     @Override
     public void setMedium() {
-        setSize(40);
+        setSize(80);
     }
 
     @Override
     public void setLarge() {
-        setSize(50);
+        setSize(90);
     }
 }

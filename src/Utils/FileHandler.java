@@ -1,7 +1,7 @@
 // FileHandler.java
 package Utils;
 
-import Interfaces.FurnitureObject;
+import Templates.FurnitureObject;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
