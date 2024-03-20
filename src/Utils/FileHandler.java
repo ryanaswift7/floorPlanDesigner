@@ -2,6 +2,7 @@
 package Utils;
 
 import Templates.FurnitureObject;
+import Templates.IconObject;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -88,8 +89,7 @@ public class FileHandler {
 
 
 
-    // Method to load the furniture list from a custom file format
-    // Method to load the furniture list from a custom file format
+    // Method to load the furniture list
     public static String loadFromFileWithPreview(Component parentComponent,
                                                  ArrayList<FurnitureObject> layoutItems,
                                                  Component canvasPanel) {
@@ -115,7 +115,9 @@ public class FileHandler {
                 // Add loaded items to the layoutItems list
                 layoutItems.addAll(loadedItems);
                 for (FurnitureObject item: layoutItems) {
-                    item.loadImage();
+                    if (item instanceof IconObject iconItem) {
+                        iconItem.loadImage();
+                    }
                 }
 
                 // Repaint the canvas panel to reflect the changes

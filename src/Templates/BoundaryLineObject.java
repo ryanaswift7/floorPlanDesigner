@@ -1,11 +1,6 @@
 package Templates;
 
 import java.awt.*;
-
-import FurnitureObjects.Essentials.Window;
-import Templates.FurnitureObject;
-import Templates.Movable;
-import java.awt.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -14,7 +9,11 @@ public abstract class BoundaryLineObject implements FurnitureObject, Movable {
     protected int x1, y1, x2, y2, deltaX, deltaY;
     protected String name;
     protected Color color;
-    protected BasicStroke stroke;
+    protected transient BasicStroke stroke;
+
+    // Additional fields for serialization
+    protected float strokeWidth;
+
 
     public BoundaryLineObject(int x1, int y1, int x2, int y2) {
         this.x1 = x1;
@@ -31,7 +30,7 @@ public abstract class BoundaryLineObject implements FurnitureObject, Movable {
     protected void setName(String name) { this.name = name; }
     protected void setColor(Color color) { this.color = color; }
     protected void setStroke(BasicStroke stroke) { this.stroke = stroke; }
-    public void loadImage() { return;}
+    protected void setStrokeWidth(float strokeWidth) { this.strokeWidth = strokeWidth; }
     @Override
     public String getName() {
         return name;
@@ -40,6 +39,9 @@ public abstract class BoundaryLineObject implements FurnitureObject, Movable {
     @Override
     public void draw(Graphics2D g) {
         Stroke defaultStroke = g.getStroke(); // Save the default stroke
+
+        // initialize strokeWidth and stroke (necessary for loading file)
+        setStroke(new BasicStroke(strokeWidth));
 
         // Set the thickness
         g.setStroke(stroke);
@@ -95,15 +97,19 @@ public abstract class BoundaryLineObject implements FurnitureObject, Movable {
         x2 = x1 + deltaX;
         y2 = y1 + deltaY;
     }
-    @Override
+    // Custom serialization method
     public void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject(); // Write other fields
-        out.writeInt(0); // Indicate that no image is available
+        out.writeFloat(strokeWidth); // Serialize stroke width
     }
 
-    @Override
-    // Custom deserialization logic for transient field doorImage
+
+    // Custom deserialization method
     public void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject(); // Read other fields, ignore looking for image
+        in.defaultReadObject(); // Read other fields
+        this.strokeWidth = in.readFloat(); // Deserialize stroke width
     }
+
+
+
 }

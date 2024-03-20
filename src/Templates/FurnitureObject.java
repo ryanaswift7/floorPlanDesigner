@@ -12,7 +12,6 @@ public interface FurnitureObject extends Serializable {
     public void draw(Graphics2D g2d);
     public FurnitureObject createObjectAtPosition(Point position);
     public Rectangle getBoundingBox();
-    public void loadImage();
     public void writeObject(ObjectOutputStream oos) throws IOException;
     public void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException;
 }
