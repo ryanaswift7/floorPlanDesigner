@@ -7,22 +7,26 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
-public abstract class IconObject implements FurnitureObject, Movable, Rotatable, Resizable {
+public abstract class IconObject implements FurnitureObject, Movable, Rotatable, Resizable, Serializable {
     protected int x, y, size;
+    protected double rotationAngle; // New field to store rotation angle
     protected String imagePath;
     protected String name;
     protected transient BufferedImage image;
+
     public IconObject(int x, int y) {
         this.x = x;
         this.y = y;
         setMedium();
     }
+
     // empty constructor used for creating rightPanel boxes
     public IconObject() {
         this.x = 0;
         this.y = 0;
-        this.size = 50;  // image in menu is 50x50
+        this.size = 50; // image in menu is 50x50
     }
+
     // Setters for fields that can be overridden
     protected void setImagePath(String imagePath) {
         this.imagePath = imagePath;
@@ -32,9 +36,11 @@ public abstract class IconObject implements FurnitureObject, Movable, Rotatable,
     protected void setName(String name) {
         this.name = name;
     }
-    protected void setSize(int size){
+
+    protected void setSize(int size) {
         this.size = size;
     }
+
     public void loadImage() {
         try {
             image = ImageIO.read(new File(imagePath));
@@ -42,19 +48,25 @@ public abstract class IconObject implements FurnitureObject, Movable, Rotatable,
             e.printStackTrace();
         }
     }
+
     @Override
     public void draw(Graphics2D g) {
         if (image != null) {
-            BufferedImage resizedDoorImage = ImageManipulator.resizeImage(image, size, size);
-            g.drawImage(resizedDoorImage, x, y, null);
+            BufferedImage rotatedImage = ImageManipulator.rotateImage(image, rotationAngle); // Rotate image based on stored angle
+            BufferedImage resizedImage = ImageManipulator.resizeImage(rotatedImage, size, size);
+            g.drawImage(resizedImage, x, y, null);
         } else {
             // If image loading failed, draw a placeholder rectangle
             g.setColor(Color.RED);
             g.fillRect(x, y, size, size);
         }
     }
+
     @Override
-    public String getName(){return name;}
+    public String getName() {
+        return name;
+    }
+
     @Override
     public Rectangle getBoundingBox() {
         return new Rectangle(x, y, size, size);
@@ -73,22 +85,24 @@ public abstract class IconObject implements FurnitureObject, Movable, Rotatable,
 
     @Override
     public void rotate90degrees() {
-        image = ImageManipulator.rotateImage(image, 90);
-
+        rotationAngle += 90;
     }
 
     @Override
     public void rotate180degrees() {
-        image = ImageManipulator.rotateImage(image, 180);
-
+        rotationAngle += 180;
     }
 
     @Override
     public void rotate270degrees() {
-        image = ImageManipulator.rotateImage(image, 270);
-
+        rotationAngle += 270;
     }
-    @Override
+
+
+    public void setSize(int width, int height) {
+        this.size = Math.max(width, height); // Just assuming that size is the maximum of width and height for simplicity
+    }
+
     // Custom serialization method
     public void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject(); // Write other fields
@@ -102,9 +116,10 @@ public abstract class IconObject implements FurnitureObject, Movable, Rotatable,
         } else {
             out.writeInt(0); // Indicate that no image is available
         }
+        out.writeDouble(rotationAngle); // Write rotation angle
+        out.writeInt(size); // Write size
     }
 
-    @Override
     // Custom deserialization method
     public void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject(); // Read other fields
@@ -118,5 +133,7 @@ public abstract class IconObject implements FurnitureObject, Movable, Rotatable,
         } else {
             image = null; // No image available
         }
+        rotationAngle = in.readDouble(); // Read rotation angle
+        size = in.readInt(); // Read size
     }
 }
