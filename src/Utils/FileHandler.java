@@ -15,7 +15,6 @@ import java.util.ArrayList;
 public class FileHandler {
 
     // Method to save the furniture list along with a preview PNG image
-    // Method to save the furniture list along with a preview PNG image
     public static String saveToFileWithPreview(Component parentComponent,
                                                ArrayList<FurnitureObject> layoutItems,
                                                Component canvasPanel) {
