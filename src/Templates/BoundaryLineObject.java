@@ -67,13 +67,14 @@ public abstract class BoundaryLineObject implements FurnitureObject, Movable {
     }
     @Override
     public Rectangle getBoundingBox() {
-        if (y1 == y2) {
-            return new Rectangle(x1, y1-2, x2-x1, 4);
-        }
-        else { // x1 == x2
-            return new Rectangle(x1-2, y1, 4, y2-y1);
-        }
+        int minX = Math.min(x1, x2);
+        int minY = Math.min(y1, y2);
+        int width = Math.abs(x2 - x1);
+        int height = Math.abs(y2 - y1);
+        // constants create small bounding box over 1D line
+        return new Rectangle(minX-2, minY-2, width + 4, height + 4);
     }
+
 
     public void snapToGrid() {
         int gridSize = 20;
